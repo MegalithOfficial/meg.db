@@ -1,7 +1,7 @@
 {
   "name": "meg.db",
   "version": "1.0.0",
-  "description": "Fast, Lightweight and efficient JSON/BSON Database Module.",
+  "description": "Fast, Lightweight and efficient BSON Database Module.",
   "type": "module",
   "main": "src/main.js",
   "exports": {
@@ -14,8 +14,8 @@
     "start": "npm run build && node dist/index.js"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "MegalithOffical",
+  "license": "MIT",
   "dependencies": {
     "bson": "^5.3.0",
     "lodash": "^4.17.21",
@@ -28,5 +28,16 @@
     "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
     "@babel/plugin-transform-modules-commonjs": "^7.22.5",
     "@babel/preset-env": "^7.22.5"
-  }
+  },
+  "directories": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MegalithOffical/meg.db.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MegalithOffical/meg.db/issues"
+  },
+  "homepage": "https://github.com/MegalithOffical/meg.db#readme"
 }
