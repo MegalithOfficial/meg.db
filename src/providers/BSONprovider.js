@@ -154,7 +154,7 @@ export class BSONprovider {
   
   save() {
     if (this.filePath) {
-      fs.writeFileSync(this.filePath, BSON.serialize(this.data));
-    }
-  }
-}
+      fs.writeFile(this.filePath, BSON.serialize(this.data))
+    };
+  };
+};
