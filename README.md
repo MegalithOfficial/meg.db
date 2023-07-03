@@ -1,5 +1,3 @@
-Certainly! Here's the updated version of the README with the optional schema feature:
-
 # meg.db
 
 meg.db is a lightweight, fast, and efficient BSON (Binary JSON) database module for JavaScript. It provides a simple interface to store and retrieve data using BSON files. The module is designed to be efficient, ensuring optimal performance for your database operations.
