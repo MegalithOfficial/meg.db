@@ -1,6 +1,7 @@
 import { BSON } from 'bson';
 import fs from 'fs';
 import _ from 'lodash';
+import stringColorizer from "string-colorizer";
 
 export class BSONprovider {
 
@@ -135,7 +136,7 @@ export class BSONprovider {
    * @param {string} file - The file to read BSON data from.
    */
   read(file) {
-    const data = fs.readFile(file);
+    const data = fs.readFileSync(file);
     this.data = BSON.deserialize(data);
   }
 
@@ -154,7 +155,7 @@ export class BSONprovider {
   
   save() {
     if (this.filePath) {
-      fs.writeFile(this.filePath, BSON.serialize(this.data))
-    };
-  };
-};
+      fs.writeFileSync(this.filePath, BSON.serialize(this.data));
+    }
+  }
+}
