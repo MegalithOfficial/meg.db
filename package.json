@@ -4,9 +4,11 @@
   "description": "Fast, Lightweight and efficient BSON Database Module.",
   "type": "module",
   "main": "src/main.js",
+  "types": "src/global.d.ts",
   "exports": {
     "types": "./src/global.d.ts",
-    "import": "./src/main.js"
+    "import": "./src/main.js",
+    "require": "./build/main.cjs"
   },
   "scripts": {
     "test": "node test/test.js",

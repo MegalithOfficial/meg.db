@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.JSONprovider = void 0;
+exports.cjsONprovider = void 0;
 var _nodeFs = _interopRequireDefault(require("node:fs"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 class JSONprovider {
@@ -13,7 +13,7 @@ class JSONprovider {
    * @param {string} options.filepath - The file path where the data will be stored.
    */
   constructor(options = {
-    filepath: "./database.json"
+    filepath: "./database.cjson"
   }) {
     this.filepath = options.filepath;
 
@@ -134,7 +134,7 @@ class JSONprovider {
     return Object.prototype.hasOwnProperty.call(this.data, key);
   }
 }
-exports.JSONprovider = JSONprovider;
+exports.cjsONprovider = JSONprovider;
 const db = new JSONprovider();
 db.set("hi.hi.hi", "hello");
 console.log(db.get("hi"));

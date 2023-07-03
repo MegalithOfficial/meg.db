@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var _BSONSchemaProvider = require("./providers/schema/BSONSchemaProvider.js");
+var _BSONSchemaProvider = require("./providers/schema/BSONSchemaProvider.cjs");
 Object.keys(_BSONSchemaProvider).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _BSONSchemaProvider[key]) return;
@@ -14,7 +14,7 @@ Object.keys(_BSONSchemaProvider).forEach(function (key) {
     }
   });
 });
-var _BSONprovider = require("./providers/BSONprovider.js");
+var _BSONprovider = require("./providers/BSONprovider.cjs");
 Object.keys(_BSONprovider).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
   if (key in exports && exports[key] === _BSONprovider[key]) return;

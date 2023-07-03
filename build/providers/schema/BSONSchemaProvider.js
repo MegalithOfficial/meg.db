@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.BSONSchema = void 0;
-var _BSONprovider = require("../BSONprovider.js");
+var _BSONprovider = require("../BSONprovider.cjs");
 var _SchemaError = _interopRequireDefault(require("../../error/SchemaError.js"));
 var _stringColorizer = _interopRequireDefault(require("string-colorizer"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
