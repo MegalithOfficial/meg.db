@@ -10,7 +10,8 @@ export class BSONProvider {
    * @param {string} filePath - The file path to read and save BSON data.
    */
   constructor(filePath) {
-    this.filePath = filePath;
+    this.filepath = filePath ?? "./megdb.bson";
+
     this.data = { Schemas: {}, default: {} };
 
     if (filePath && fs.existsSync(filePath)) {
@@ -24,6 +25,7 @@ export class BSONProvider {
    * @param {object} schema - The schema object.
    */
   setSchema(schemaName, schema) {
+    this.checkparams(schemaName, schema);
     _.set(this.data, ['Schemas', schemaName], schema);
   }
 
@@ -33,6 +35,7 @@ export class BSONProvider {
    * @param {any} value - The value to set.
    */
   set(key, value) {
+    this.checkparams(key, value);
     const schema = this.getSchema(key);
     if (schema) {
       schema.validate(value);
@@ -47,6 +50,7 @@ export class BSONProvider {
    * @returns {any} The value associated with the key.
    */
   get(key) {
+    this.checkparams(key, "get");
     return _.get(this.data, ['default', key]);
   }
 
@@ -55,8 +59,9 @@ export class BSONProvider {
    * @param {string} key - The key to delete.
    */
   delete(key) {
+    this.checkparams(key, "delete");
     _.unset(this.data, ['default', key]);
-    this.save(); 
+    this.save();
   }
 
   /**
@@ -81,6 +86,7 @@ export class BSONProvider {
    * @param {any} value - The value to add to the array.
    */
   push(key, value) {
+    this.checkparams(key, value);
     const array = this.get(key) || [];
     array.push(value);
     this.set(key, array);
@@ -92,12 +98,19 @@ export class BSONProvider {
    * @param {any} value - The value to remove from the array.
    */
   push(key, value) {
+    this.checkparams(key, value);
     const array = this.get(key) || [];
     array.push(value);
     this.set(key, array);
   }
 
+  /**
+   * 
+   * @param {*} key 
+   * @param {*} value 
+   */
   pull(key, value) {
+    this.checkparams(key, value);
     const array = this.get(key) || [];
     const index = array.indexOf(value);
     if (index > -1) {
@@ -108,9 +121,12 @@ export class BSONProvider {
 
   /**
    * Deletes all key-value pairs from the default data object.
+   * @param {String} type
    */
-  deleteAll() {
-    this.data.default = {};
+  deleteAll(type) {
+    if (type.toLocaleLowerCase() === "default") this.data.default = {};
+    else if (type.toLocaleLowerCase() === "schemas") this.data.Schemas = {};
+    else throw new Error("Unknown type: " + type + ". Valid types: schemas, default");
     this.save();
   }
 
@@ -120,6 +136,20 @@ export class BSONProvider {
    */
   all() {
     return this.data.default;
+  }
+
+  /**
+   * Moves data from other databases to meg.db.
+   * @param {Object} opt 
+   * @returns {boolean}
+   */
+  move(data) {
+    if (!data.constructor) throw new Error("Invalid database class.")
+    const datas = data.all() ?? data.getAll();
+    for (let key in datas) {
+      this.set(key, datas[key]);
+    };
+    return true;
   }
 
   /**
@@ -152,10 +182,28 @@ export class BSONProvider {
     });
   }
 
-  
   save() {
     if (this.filePath) {
       fs.writeFileSync(this.filePath, BSON.serialize(this.data));
     }
+  }
+
+  /**
+   * Checks params.
+   * @private
+   * @param {string} key 
+   * @param {any} value 
+   * @returns {boolean}
+   */
+  checkparams(key, value) {
+    if (typeof key !== 'string') {
+      throw new TypeError('The "key" parameter must be a string.');
+    } else if (key.length === 0) {
+      throw new Error('The "key" parameter cannot be empty.');
+    }
+    if (!value) {
+      throw new Error('The "value" parameter cannot be empty.');
+    }
+    return true;
   }
 }

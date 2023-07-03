@@ -1,6 +1,6 @@
 {
   "name": "meg.db",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Fast, Lightweight and efficient BSON Database Module.",
   "type": "module",
   "main": "src/main.js",
@@ -15,7 +15,23 @@
     "build": "babel index.js -d dist",
     "start": "npm run build && node dist/index.js"
   },
-  "keywords": [],
+  "keywords": [
+    "Database",
+    "Module",
+    "Schema",
+    "Query",
+    "BSON",
+    "Collection",
+    "discord bot",
+    "JSON",
+    "Data Access",
+    "Binary Json",
+    "NoSQL",
+    "discord bot database",
+    "discord",
+    "Backup",
+    "Database Management"
+  ],
   "author": "MegalithOffical",
   "license": "MIT",
   "dependencies": {

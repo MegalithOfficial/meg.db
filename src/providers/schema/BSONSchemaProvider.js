@@ -1,8 +1,8 @@
-import { BSONprovider } from "../BSONprovider.js";
+import { BSONProvider } from "../BSONprovider.js";
 import { SchemaError } from "../../error/CustomError.js"
 import stringColorizer from "string-colorizer";
 
-export class BSONSchema extends BSONprovider {
+export class BSONSchema extends BSONProvider {
   constructor(filepath, fields) {
     super(filepath);
     this.fields = new Map(Object.entries(fields));
@@ -16,7 +16,7 @@ export class BSONSchema extends BSONprovider {
   validate(document) {
     const colorizer = new stringColorizer();
     const invalidTypes = [];
-    const missingFields = []; // kafam sikişti
+    const missingFields = [];
 
     for (const [field, { type, required }] of this.fields) {
       const value = document[field];
@@ -51,16 +51,5 @@ export class BSONSchema extends BSONprovider {
     }
     
     return true;
-  }
-
-  /**
-   * Inserts a document into the specified collection after validating against the schema.
-   * @param {string} collectionName - The name of the collection to insert the document into.
-   * @param {Object} document - The document to insert.
-   * @throws {Error} If the validation fails.
-   */
-  insert(collectionName, document) {
-    this.validate(document);
-    super.set(collectionName, document._id, document);
-  }
-}
+  };
+};

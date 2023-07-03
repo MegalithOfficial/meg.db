@@ -29,3 +29,5 @@ class CustomError extends Error {
 export class DatabaseError extends CustomError {}
 
 export class SchemaError extends CustomError {}
+
+export class MissingParameter extends CustomError {}

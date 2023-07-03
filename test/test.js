@@ -1,6 +1,6 @@
-import { BSONprovider, BSONSchema } from "../src/main.js"
+import { BSONProvider, BSONSchema } from "../src/main.js"
 
-const db = new BSONprovider('./data.bson');
+const db = new BSONProvider('./data.bson');
 
 db.set('key1', 'value1');
 const value = db.get('key1');
