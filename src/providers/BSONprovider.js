@@ -1,9 +1,9 @@
 import { BSON } from 'bson';
-import fs from 'fs';
+import fs from 'graceful-fs';
 import _ from 'lodash';
-import stringColorizer from "string-colorizer";
 
 export class BSONprovider {
+
 
   /**
    * Constructs a new instance of the BSONprovider class.

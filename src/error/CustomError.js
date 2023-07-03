@@ -1,6 +1,6 @@
 import stringColorizer from "string-colorizer";
 
-export default class CustomError extends Error {
+class CustomError extends Error {
   /**
    * @param {{
    *    type: string,
@@ -26,4 +26,6 @@ export default class CustomError extends Error {
   }
 };
 
-// "Schema validation failed: Required field 'age' is missing"  bu error mesaj listini oluşturan kodu editlememiz gerek btw
+export class DatabaseError extends CustomError {}
+
+export class SchemaError extends CustomError {}

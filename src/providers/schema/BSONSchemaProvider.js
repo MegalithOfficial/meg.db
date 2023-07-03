@@ -1,5 +1,5 @@
 import { BSONprovider } from "../BSONprovider.js";
-import SchemaError from "../../error/SchemaError.js"
+import { SchemaError } from "../../error/CustomError.js"
 import stringColorizer from "string-colorizer";
 
 export class BSONSchema extends BSONprovider {
