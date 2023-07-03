@@ -2,7 +2,7 @@ import { BSON } from 'bson';
 import fs from 'graceful-fs';
 import _ from 'lodash';
 
-export class BSONprovider {
+export class BSONProvider {
 
 
   /**
