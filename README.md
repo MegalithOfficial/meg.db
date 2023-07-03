@@ -17,7 +17,7 @@ To use meg.db in your JavaScript project, import the necessary classes and insta
 ```javascript
 import { BSONprovider } from "meg.db";
 
-const db = new BSONprovider('./data.bson');
+const db = new BSONProvider('./data.bson');
 ```
 
 ### Simple Examples
@@ -51,7 +51,7 @@ Module also supports optional schema validation using the `BSONSchema` class. Yo
 ```javascript
 import { BSONprovider, BSONSchema } from "meg.db";
 
-const db = new BSONprovider('./data.bson');
+const db = new BSONProvider('./data.bson');
 
 const userSchema = new BSONSchema('./data.bson', {
   name: { type: 'string', required: true },
