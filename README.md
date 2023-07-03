@@ -15,7 +15,7 @@ npm install meg.db
 To use meg.db in your JavaScript project, import the necessary classes and instantiate a `BSONprovider` object with the path to your BSON file:
 
 ```javascript
-import { BSONprovider } from "meg.db";
+import { BSONProvider } from "meg.db";
 
 const db = new BSONProvider('./data.bson');
 ```

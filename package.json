@@ -1,6 +1,6 @@
 {
   "name": "meg.db",
-  "version": "1.0.5",
+  "version": "1.0.5-readmefix",
   "description": "Fast, Lightweight and efficient BSON Database Module.",
   "type": "module",
   "main": "src/main.js",
