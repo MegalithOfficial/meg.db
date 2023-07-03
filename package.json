@@ -1,5 +1,5 @@
 {
-  "name": "databasemodule",
+  "name": "meg.db",
   "version": "1.0.0",
   "description": "Fast, Lightweight and efficient JSON/BSON Database Module.",
   "type": "module",

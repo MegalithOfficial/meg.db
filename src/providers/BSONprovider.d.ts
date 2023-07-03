@@ -1,20 +1,27 @@
-declare module 'Database' {
-  export interface DatabaseOptions {
-    filepath: string;
-  }
+declare module "bson-provider" {
 
-  export class Database {
-    constructor(options: DatabaseOptions);
+  type BSONData = Record<string, any>;
 
-    load(): void;
-    save(): void;
+  type BSONProviderOptions = {
+    filepath?: string;
+  };
+
+  class BSONProvider {
+    constructor(options?: BSONProviderOptions);
+
     set(key: string, value: any): void;
-    get(key: string): any;
+    get(key: string): any | undefined;
+    exists(key: string): boolean;
     delete(key: string): void;
     push(key: string, value: any): void;
     pull(key: string, value: any): void;
     deleteAll(): void;
-    all(): {[key: string]: any};
-    exists(key: string): boolean;
+    all(): BSONData;
+    query(queryExpression: string): any[];
+
+    protected load(): void;
+    protected save(): void;
   }
+
+  export default BSONProvider;
 }

@@ -10,14 +10,10 @@ export class BSONprovider {
    */
   constructor(options = { filepath: "./database.bson" }) {
     this.filepath = options.filepath;
-
-    /**
-    * @private
-    */
-    this.data = {}
+    this.data = new Map();
+    this.schemas = new Map();
     this.load();
   }
-
   /**
    * Loads data from the file specified in the constructor.
    * @private
@@ -25,9 +21,12 @@ export class BSONprovider {
   load() {
     try {
       const readData = fs.readFileSync(this.filepath);
-      this.data = BSON.deserialize(readData);
+      const deserializedData = BSON.deserialize(readData);
+      this.data = new Map(Object.entries(deserializedData.data || {}));
+      this.schemas = new Map(Object.entries(deserializedData.schemas || {}));
     } catch (_) {
-      this.data = {};
+      this.data = new Map();
+      this.schemas = new Map();
       this.save();
     }
   }
@@ -37,8 +36,12 @@ export class BSONprovider {
    * @private
    */
   save() {
-    const data = BSON.serialize(this.data);
-    fs.writeFileSync(this.filepath, data);
+    const data = {
+      data: Object.fromEntries(this.data),
+      schemas: Object.fromEntries(this.schemas),
+    };
+    const serializedData = BSON.serialize(data);
+    fs.writeFileSync(this.filepath, serializedData);
   }
 
   /**
@@ -47,7 +50,7 @@ export class BSONprovider {
    * @param {*} value 
    */
   set(key, value) {
-    this.data[key] = value;
+    this.data.set(key, value);
     this.save();
   }
 
@@ -57,7 +60,7 @@ export class BSONprovider {
    * @returns {*} The value for the specified key.
    */
   get(key) {
-    return this.data[key];
+    return this.data.get(key);
   }
 
   /**
@@ -66,7 +69,7 @@ export class BSONprovider {
    * @returns {boolean} True if the key exists, false otherwise.
    */
   exists(key) {
-    return Object.prototype.hasOwnProperty.call(this.data, key);
+    return this.data.has(key);
   }
 
   /**
@@ -74,7 +77,7 @@ export class BSONprovider {
    * @param {string} key - The key to delete.
    */
   delete(key) {
-    delete this.data[key];
+    this.data.delete(key);
     this.save();
   }
 
@@ -84,10 +87,10 @@ export class BSONprovider {
    * @param {*} value - The value to push.
    */
   push(key, value) {
-    if (!Array.isArray(this.data[key])) {
-      this.data[key] = [];
+    if (!Array.isArray(this.data.get(key))) {
+      this.data.set(key, []);
     }
-    this.data[key].push(value);
+    this.data.get(key).push(value);
     this.save();
   }
 
@@ -97,17 +100,19 @@ export class BSONprovider {
    * @param {*} value - The value to pull.
    */
   pull(key, value) {
-    if (Array.isArray(this.data[key])) {
-      this.data[key] = this.data[key].filter(item => item !== value);
+    if (Array.isArray(this.data.get(key))) {
+      const updated = this.data.get(key).filter((item) => item !== value);
+      this.data.set(key, updated);
       this.save();
     }
   }
+
 
   /**
    * Deletes all data from the database.
    */
   deleteAll() {
-    this.data = {};
+    this.data = new Map();
     this.save();
   }
 
@@ -116,16 +121,16 @@ export class BSONprovider {
    * @returns {Object} All data stored in the database.
    */
   all() {
-    return this.data;
+    return Object.fromEntries(this.data);
   }
-
   /**
    * Checks is specified key is in the database.
    * @param {String} key 
    * @returns {boolean} 
    */
-  exists(key) {
-    return Object.prototype.hasOwnProperty.call(this.data, key);
+  query(queryExpression) {
+    const queryFunction = new Function("data", `return ${queryExpression};`);
+    return Array.from(this.data.values()).filter(queryFunction);
   }
 
 }
