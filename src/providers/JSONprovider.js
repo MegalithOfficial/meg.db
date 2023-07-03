@@ -1,22 +1,20 @@
-import { BSON } from 'bson';
 import fs from 'graceful-fs';
 import _ from 'lodash';
 
-export class BSONProvider {
+export class JSONProvider {
 
   /**
    * Constructs a new instance of the BSONprovider class.
-   * @param {string} filePath - The file path to read and save BSON data.
+   * @param {string} filePath - The file path to read and save JSON data.
    */
   constructor(filePath) {
-    this.filepath = filePath ?? "./megdb.bson";
-
+    this.filePath = filePath || "./megdb.json";
     this.data = { Schemas: {}, default: {} };
 
     if (filePath && fs.existsSync(filePath)) {
       this.read(filePath);
-    }
-  }
+    };
+  };
 
   /**
    * Sets the schema for a given schema name.
@@ -26,13 +24,14 @@ export class BSONProvider {
   setSchema(schemaName, schema) {
     this.checkparams(schemaName, schema);
     _.set(this.data, ['Schemas', schemaName], schema);
-  }
+    this.save();
+  };
 
   /**
-   * Sets a key-value pair in the default data object.
-   * @param {string} key - The key to set.
-   * @param {any} value - The value to set.
-   */
+    * Sets a key-value pair in the default data object.
+    * @param {string} key - The key to set.
+    * @param {any} value - The value to set.
+    */
   set(key, value) {
     this.checkparams(key, value);
     const schema = this.getSchema(key);
@@ -41,7 +40,7 @@ export class BSONProvider {
     }
     _.set(this.data, ['default', key], value);
     this.save();
-  }
+  };
 
   /**
    * Retrieves the value associated with the specified key from the default data object.
@@ -51,7 +50,7 @@ export class BSONProvider {
   get(key) {
     this.checkparams(key, "get");
     return _.get(this.data, ['default', key]);
-  }
+  };
 
   /**
    * Deletes the key-value pair associated with the specified key from the default data object.
@@ -61,7 +60,7 @@ export class BSONProvider {
     this.checkparams(key, "delete");
     _.unset(this.data, ['default', key]);
     this.save();
-  }
+  };
 
   /**
    * Filters the default data object based on the provided callback function.
@@ -77,7 +76,7 @@ export class BSONProvider {
       }
     }
     return filteredData;
-  }
+  };
 
   /**
    * Adds a value to an array associated with the specified key in the default data object.
@@ -89,24 +88,12 @@ export class BSONProvider {
     const array = this.get(key) || [];
     array.push(value);
     this.set(key, array);
-  }
+  };
 
   /**
    * Removes a value from the array associated with the specified key in the default data object.
    * @param {string} key - The key of the array.
    * @param {any} value - The value to remove from the array.
-   */
-  push(key, value) {
-    this.checkparams(key, value);
-    const array = this.get(key) || [];
-    array.push(value);
-    this.set(key, array);
-  }
-
-  /**
-   * 
-   * @param {*} key 
-   * @param {*} value 
    */
   pull(key, value) {
     this.checkparams(key, value);
@@ -116,7 +103,7 @@ export class BSONProvider {
       array.splice(index, 1);
       this.set(key, array);
     }
-  }
+  };
 
   /**
    * Deletes all key-value pairs from the default data object.
@@ -127,7 +114,7 @@ export class BSONProvider {
     else if (type.toLocaleLowerCase() === "schemas") this.data.Schemas = {};
     else throw new Error("Unknown type: " + type + ". Valid types: schemas, default");
     this.save();
-  }
+  };
 
   /**
    * Retrieves all key-value pairs from the default data object.
@@ -135,7 +122,7 @@ export class BSONProvider {
    */
   all() {
     return this.data.default;
-  }
+  };
 
   /**
    * Moves data from other databases to meg.db.
@@ -144,13 +131,12 @@ export class BSONProvider {
    */
   move(data) {
     if (!data.constructor) throw new Error("Invalid database class.")
-    const datas = data.all() ?? data.getAll();
+    const datas = data.all() || data.getAll();
     for (let key in datas) {
       this.set(key, datas[key]);
-    };
+    }
     return true;
-  }
-
+  };
   /**
    * Retrieves the schema associated with the specified schema name.
    * @param {string} schemaName - The name of the schema.
@@ -158,34 +144,35 @@ export class BSONProvider {
    */
   getSchema(schemaName) {
     return _.get(this.data, ['Schemas', schemaName]);
-  }
+  };
 
   /**
-   * Reads BSON data from a file and assigns it to the data property.
-   * @param {string} file - The file to read BSON data from.
+   * Reads JSON data from a file and assigns it to the data property.
+   * @param {string} file - The file to read JSON data from.
    */
   read(file) {
-    const data = fs.readFileSync(file);
-    this.data = BSON.deserialize(data);
-  }
+    const rawData = fs.readFileSync(file);
+    this.data = JSON.parse(rawData);
+  };
 
   /**
-   * Asynchronously reads BSON data from a file and merges it into the data property.
-   * @param {string} file - The file to read BSON data from.
+   * Asynchronously reads JSON data from a file and merges it into the data property.
+   * @param {string} file - The file to read JSON data from.
    */
   load(file) {
-    fs.readFile(file, (err, data) => {
+    fs.readFile(file, (err, rawData) => {
       if (err) throw err;
-      _.merge(this.data, BSON.deserialize(data));
+      _.merge(this.data, JSON.parse(rawData));
       this.save();
     });
-  }
+  };
 
   save() {
     if (this.filePath) {
-      fs.writeFileSync(this.filePath, BSON.serialize(this.data));
-    }
-  }
+      const jsonData = JSON.stringify(this.data, null, 2);
+      fs.writeFileSync(this.filePath, jsonData);
+    };
+  };
 
   /**
    * Checks params.
@@ -204,5 +191,5 @@ export class BSONProvider {
       throw new Error('The "value" parameter cannot be empty.');
     }
     return true;
-  }
-}
+  };
+};
