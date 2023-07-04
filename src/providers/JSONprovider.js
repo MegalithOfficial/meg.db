@@ -179,9 +179,8 @@ export class JSONProvider {
 
     const transformStream = new Transform({
       objectMode: true,
-      transform: (chunk, encoding, callback) => {
+      transform: (chunk, encoding, c) => {
         _merge(this.data, chunk);
-        callback();
       }
     });
 
@@ -191,7 +190,6 @@ export class JSONProvider {
 
   /**
    * Asynchronously saves JSON data.
-   * @param {string} file - The file to save JSON data.
    */
   save() {
     if (this.filePath) {
