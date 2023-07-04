@@ -1,5 +1,8 @@
+
 import fs from 'graceful-fs';
 import _ from 'lodash';
+import JSONStream from 'JSONStream';
+import { Transform } from 'node:stream';
 
 export class JSONProvider {
 
@@ -8,13 +11,19 @@ export class JSONProvider {
    * @param {string} filePath - The file path to read and save JSON data.
    */
   constructor(filePath) {
-    this.filePath = filePath || "./megdb.json";
+    this.filePath = filePath || './megdb.json';
     this.data = { Schemas: {}, default: {} };
+    this.cache = {};
 
     if (filePath && fs.existsSync(filePath)) {
+      console.log("file found called: " + filePath);
       this.read(filePath);
-    };
+    } else {
+      console.log("creating new file called: " + filePath);
+      this.save();
+    }
   };
+
 
   /**
    * Sets the schema for a given schema name.
@@ -39,28 +48,36 @@ export class JSONProvider {
       schema.validate(value);
     }
     _.set(this.data, ['default', key], value);
+    this.cache[key] = value;
     this.save();
-  };
+  }
 
   /**
    * Retrieves the value associated with the specified key from the default data object.
    * @param {string} key - The key to retrieve the value for.
    * @returns {any} The value associated with the key.
    */
+
   get(key) {
-    this.checkparams(key, "get");
-    return _.get(this.data, ['default', key]);
-  };
+    this.checkparams(key, 'get');
+    if (key in this.cache) {
+      return this.cache[key];
+    }
+    const value = _.get(this.data, ['default', key]);
+    this.cache[key] = value;
+    return value;
+  }
 
   /**
    * Deletes the key-value pair associated with the specified key from the default data object.
    * @param {string} key - The key to delete.
    */
   delete(key) {
-    this.checkparams(key, "delete");
+    this.checkparams(key, 'delete');
     _.unset(this.data, ['default', key]);
+    delete this.cache[key];
     this.save();
-  };
+  }
 
   /**
    * Filters the default data object based on the provided callback function.
@@ -76,7 +93,7 @@ export class JSONProvider {
       }
     }
     return filteredData;
-  };
+  }
 
   /**
    * Adds a value to an array associated with the specified key in the default data object.
@@ -88,7 +105,7 @@ export class JSONProvider {
     const array = this.get(key) || [];
     array.push(value);
     this.set(key, array);
-  };
+  }
 
   /**
    * Removes a value from the array associated with the specified key in the default data object.
@@ -103,18 +120,22 @@ export class JSONProvider {
       array.splice(index, 1);
       this.set(key, array);
     }
-  };
+  }
 
   /**
    * Deletes all key-value pairs from the default data object.
    * @param {String} type
    */
   deleteAll(type) {
-    if (type.toLocaleLowerCase() === "default") this.data.default = {};
-    else if (type.toLocaleLowerCase() === "schemas") this.data.Schemas = {};
-    else throw new Error("Unknown type: " + type + ". Valid types: schemas, default");
+    const lowerCaseType = type.toLowerCase();
+    if (lowerCaseType === 'default') this.data.default = {};
+    else if (lowerCaseType === 'schemas') this.data.Schemas = {};
+    else throw new Error(`Unknown type: ${type}. Valid types: schemas, default`);
+
+    this.cache = {};
     this.save();
-  };
+  }
+
 
   /**
    * Retrieves all key-value pairs from the default data object.
@@ -122,7 +143,7 @@ export class JSONProvider {
    */
   all() {
     return this.data.default;
-  };
+  }
 
   /**
    * Moves data from other databases to meg.db.
@@ -130,13 +151,13 @@ export class JSONProvider {
    * @returns {boolean}
    */
   move(data) {
-    if (!data.constructor) throw new Error("Invalid database class.")
+    if (!data.constructor) throw new Error('Invalid database class.');
     const datas = data.all() || data.getAll();
     for (let key in datas) {
       this.set(key, datas[key]);
     }
     return true;
-  };
+  }
   /**
    * Retrieves the schema associated with the specified schema name.
    * @param {string} schemaName - The name of the schema.
@@ -151,26 +172,31 @@ export class JSONProvider {
    * @param {string} file - The file to read JSON data from.
    */
   read(file) {
-    const rawData = fs.readFileSync(file);
-    this.data = JSON.parse(rawData);
-  };
+    const rawData = fs.createReadStream(file, { encoding: 'utf8' });
+    const parseStream = JSONStream.parse('*');
+
+    const transformStream = new Transform({
+      objectMode: true,
+      transform: (chunk, encoding, callback) => {
+        _.merge(this.data, chunk);
+        callback();
+      }
+    });
+
+    rawData.pipe(parseStream).pipe(transformStream);
+    rawData.on('end', () => this.cache = {});
+  }
 
   /**
-   * Asynchronously reads JSON data from a file and merges it into the data property.
-   * @param {string} file - The file to read JSON data from.
+   * Asynchronously saves JSON data.
+   * @param {string} file - The file to save JSON data.
    */
-  load(file) {
-    fs.readFile(file, (err, rawData) => {
-      if (err) throw err;
-      _.merge(this.data, JSON.parse(rawData));
-      this.save();
-    });
-  };
-
   save() {
     if (this.filePath) {
-      const jsonData = JSON.stringify(this.data, null, 2);
-      fs.writeFileSync(this.filePath, jsonData);
+      const writeStream = fs.createWriteStream(this.filePath, { encoding: 'utf8' });
+      const stringifyStream = JSONStream.stringify();
+      stringifyStream.pipe(writeStream);
+      stringifyStream.end(this.data);
     };
   };
 
