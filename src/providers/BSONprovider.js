@@ -1,6 +1,7 @@
 import { BSON } from 'bson';
 import fs from 'graceful-fs';
 import _ from 'lodash';
+import { pipeline, Transform, Writable  } from 'node:stream';
 
 export class BSONProvider {
 
@@ -9,12 +10,16 @@ export class BSONProvider {
    * @param {string} filePath - The file path to read and save BSON data.
    */
   constructor(filePath) {
-    this.filepath = filePath ?? "./megdb.bson";
-
+    this.filePath = filePath ?? "./megdb.bson";
     this.data = { Schemas: {}, default: {} };
+    this.cache = {};
 
     if (filePath && fs.existsSync(filePath)) {
+      console.log("file found called: " + filePath);
       this.read(filePath);
+    } else {
+      console.log("creating new file called: " + filePath);
+      this.save();
     }
   }
 
@@ -26,6 +31,7 @@ export class BSONProvider {
   setSchema(schemaName, schema) {
     this.checkparams(schemaName, schema);
     _.set(this.data, ['Schemas', schemaName], schema);
+    this.save();
   }
 
   /**
@@ -41,6 +47,7 @@ export class BSONProvider {
     }
     _.set(this.data, ['default', key], value);
     this.save();
+    this.cache[key] = value;
   }
 
   /**
@@ -49,8 +56,12 @@ export class BSONProvider {
    * @returns {any} The value associated with the key.
    */
   get(key) {
-    this.checkparams(key, "get");
-    return _.get(this.data, ['default', key]);
+    this.checkparams(key, 'get');
+    if (key in this.cache) {
+      return this.cache[key];
+    }
+    const value = _.get(this.data, ['default', key]);
+    return value;
   }
 
   /**
@@ -58,8 +69,9 @@ export class BSONProvider {
    * @param {string} key - The key to delete.
    */
   delete(key) {
-    this.checkparams(key, "delete");
+    this.checkparams(key, 'delete');
     _.unset(this.data, ['default', key]);
+    delete this.cache[key];
     this.save();
   }
 
@@ -123,9 +135,12 @@ export class BSONProvider {
    * @param {String} type
    */
   deleteAll(type) {
-    if (type.toLocaleLowerCase() === "default") this.data.default = {};
-    else if (type.toLocaleLowerCase() === "schemas") this.data.Schemas = {};
-    else throw new Error("Unknown type: " + type + ". Valid types: schemas, default");
+    const lowerCaseType = type.toLowerCase();
+    if (lowerCaseType === 'default') this.data.default = {};
+    else if (lowerCaseType === 'schemas') this.data.Schemas = {};
+    else throw new Error(`Unknown type: ${type}. Valid types: schemas, default`);
+
+    this.cache = {};
     this.save();
   }
 
@@ -143,11 +158,11 @@ export class BSONProvider {
    * @returns {boolean}
    */
   move(data) {
-    if (!data.constructor) throw new Error("Invalid database class.")
-    const datas = data.all() ?? data.getAll();
+    if (!data.constructor) throw new Error('Invalid database class.');
+    const datas = data.all() || data.getAll();
     for (let key in datas) {
       this.set(key, datas[key]);
-    };
+    }
     return true;
   }
 
@@ -167,18 +182,6 @@ export class BSONProvider {
   read(file) {
     const data = fs.readFileSync(file);
     this.data = BSON.deserialize(data);
-  }
-
-  /**
-   * Asynchronously reads BSON data from a file and merges it into the data property.
-   * @param {string} file - The file to read BSON data from.
-   */
-  load(file) {
-    fs.readFile(file, (err, data) => {
-      if (err) throw err;
-      _.merge(this.data, BSON.deserialize(data));
-      this.save();
-    });
   }
 
   save() {
