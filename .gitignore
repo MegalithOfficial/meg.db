@@ -2,4 +2,3 @@
 /database.json
 node_modules
 .vscode
-src\providers\JSONprovider.js
