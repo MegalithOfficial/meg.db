@@ -1,11 +1,36 @@
-import { BSONProvider, BSONSchema } from "../src/main.js"
+import { BSONProvider, BSONSchema, JSONProvider } from "../src/main.js"
+import benchmark from 'benchmark';
 
-const db = new BSONProvider('./data.bson');
+const dbjson = new JSONProvider('./data.json');
+const dbbson = new BSONProvider('./data.bson');
 
 db.set('key1', 'value1');
 const value = db.get('key1');
 console.log(value);
 
+// Benchmark
+const { Suite } = benchmark;
+const suite = new Suite('test');
+
+suite.on('cycle', (event) => console.log(String(event.target)));
+suite.on('complete', (event) => event.currentTarget.sort((a, b) => b.hz - a.hz).map((benchmark, index) => console.log(`${index + 1}. ${benchmark.name} - ${benchmark.hz.toFixed(3)}/ops`)));
+
+suite.add('meg.db-json', () => {
+  for (let i = 0; i < 500; i++) {
+    dbjson.set(`keyring-${i}`, `${i}`);
+    dbjson.get(`keyring-${i}`);
+  }
+});
+suite.add('meg.db-bson', () => {
+  for (let i = 0; i < 500; i++) {
+    dbbson.set(`keyring-${i}`, `${i}`);
+    dbbson.get(`keyring-${i}`);
+  }
+});
+
+suite.run({ async: false })
+
+// Schema
 const userSchema = new BSONSchema('./data.bson', {
   name: { type: 'string', required: true },
   age: { type: 'number', required: true },

@@ -1,6 +1,10 @@
 
 import fs from 'graceful-fs';
-import _ from 'lodash';
+import _get from 'lodash.get';
+import _set from 'lodash.set';
+import _unset from 'lodash.unset';
+import _has from 'lodash.has';
+import _merge from 'lodash.merge';
 import JSONStream from 'JSONStream';
 import { Transform } from 'node:stream';
 
@@ -32,7 +36,7 @@ export class JSONProvider {
    */
   setSchema(schemaName, schema) {
     this.checkparams(schemaName, schema);
-    _.set(this.data, ['Schemas', schemaName], schema);
+    _set(this.data, ['Schemas', schemaName], schema);
     this.save();
   };
 
@@ -47,7 +51,7 @@ export class JSONProvider {
     if (schema) {
       schema.validate(value);
     }
-    _.set(this.data, ['default', key], value);
+    _set(this.data, ['default', key], value);
     this.cache[key] = value;
     this.save();
   }
@@ -63,7 +67,7 @@ export class JSONProvider {
     if (key in this.cache) {
       return this.cache[key];
     }
-    const value = _.get(this.data, ['default', key]);
+    const value = _get(this.data, ['default', key]);
     this.cache[key] = value;
     return value;
   }
@@ -74,7 +78,7 @@ export class JSONProvider {
    */
   delete(key) {
     this.checkparams(key, 'delete');
-    _.unset(this.data, ['default', key]);
+    _unset(this.data, ['default', key]);
     delete this.cache[key];
     this.save();
   }
@@ -164,7 +168,7 @@ export class JSONProvider {
    * @returns {object} The schema associated with the schema name.
    */
   getSchema(schemaName) {
-    return _.get(this.data, ['Schemas', schemaName]);
+    return _get(this.data, ['Schemas', schemaName]);
   };
 
   /**
@@ -178,7 +182,7 @@ export class JSONProvider {
     const transformStream = new Transform({
       objectMode: true,
       transform: (chunk, encoding, callback) => {
-        _.merge(this.data, chunk);
+        _merge(this.data, chunk);
         callback();
       }
     });
