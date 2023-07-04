@@ -17,10 +17,8 @@ export class BSONProvider {
     this.cache = {};
 
     if (filePath && fs.existsSync(filePath)) {
-      console.log("file found called: " + filePath);
       this.read(filePath);
     } else {
-      console.log("creating new file called: " + filePath);
       this.save();
     }
   }

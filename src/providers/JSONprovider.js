@@ -15,15 +15,13 @@ export class JSONProvider {
    * @param {string} filePath - The file path to read and save JSON data.
    */
   constructor(filePath) {
-    this.filePath = filePath || './megdb.json';
+    this.filePath = filePath ?? "./megdb.json";
     this.data = { Schemas: {}, default: {} };
     this.cache = {};
 
     if (filePath && fs.existsSync(filePath)) {
-      console.log("file found called: " + filePath);
       this.read(filePath);
     } else {
-      console.log("creating new file called: " + filePath);
       this.save();
     }
   };
