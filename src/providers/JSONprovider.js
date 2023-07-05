@@ -174,44 +174,9 @@ export class JSONProvider {
    * @param {string} file - The file to read JSON data from.
    */
   read(file) {
-    const rawData = fs.createReadStream(file, { encoding: 'utf8' });
-    const parseStream = JSONStream.parse('*');
-
-    const transformStream = new Transform({
-      objectMode: true,
-      transform: (chunk, encoding, c) => {
-        _merge(this.data, chunk);
-      }
-    });
-
-    rawData.pipe(parseStream).pipe(transformStream);
-    rawData.on('end', () => this.cache = {});
+    _merge(this.data, JSON.parse(fs.readFileSync(file, { encoding: 'utf8' })))
   }
 
-  /**
-   * @private
-   * @param {object} data 
-   * @param {number} chunkSize 
-   * @param {function} callback 
-   */
-  saveInChunks(data, writeStream, callback) {
-    const stringifyStream = JSONStream.stringify();
-    stringifyStream.pipe(writeStream);
-  
-    const objectStream = new stream.Readable({
-      objectMode: true,
-      read() {
-        for (const key in this.data) {
-          this.push({ [key]: this.data[key] });
-        }
-        this.push(null);
-      }
-    });
-    objectStream.data = data;
-    objectStream.pipe(stringifyStream);
-  
-    stringifyStream.on('end', callback);
-  }
   /**
    * Asynchronously saves JSON data.
    * @param {string} file - The file to save JSON data.
