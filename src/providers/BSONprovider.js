@@ -4,6 +4,8 @@ import _get from 'lodash.get';
 import _set from 'lodash.set';
 import _unset from 'lodash.unset';
 import _has from 'lodash.has';
+import _merge from 'lodash.merge';
+import { Transform } from 'node:stream';
 
 export class BSONProvider {
 
@@ -179,17 +181,35 @@ export class BSONProvider {
    * Reads BSON data from a file and assigns it to the data property.
    * @param {string} file - The file to read BSON data from.
    */
-  read(file) {
-    const data = fs.readFileSync(file);
-    this.data = BSON.deserialize(data);
-    this.cache = {};
-  }
 
-  save() {
-    if (this.filePath) {
-      fs.writeFileSync(this.filePath, BSON.serialize(this.data));
-    }
+  read(file) {
+    const stream = fs.createReadStream(file, { encoding: 'utf8' });
+    const transform = new Transform({
+      transform: (chunk, e, c) => {
+        try {
+          _merge(this.data, BSON.deserialize(chunk))
+          this.cache = {};
+        } catch (error) {
+          throw error;
+        }
+      }
+    });
+  
+    stream.pipe(transform);
+  
+    transform.on('error', (err) => {
+      throw err;
+    });
   }
+  
+
+save() {
+  if (this.filePath) {
+    const stream = fs.createWriteStream(this.filePath);
+    stream.write(BSON.serialize(this.data));
+    stream.end();
+  }
+}
 
   /**
    * Checks params.

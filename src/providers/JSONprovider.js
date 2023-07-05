@@ -189,16 +189,45 @@ export class JSONProvider {
   }
 
   /**
+   * @private
+   * @param {object} data 
+   * @param {number} chunkSize 
+   * @param {function} callback 
+   */
+  saveInChunks(data, writeStream, callback) {
+    const stringifyStream = JSONStream.stringify();
+    stringifyStream.pipe(writeStream);
+  
+    const objectStream = new stream.Readable({
+      objectMode: true,
+      read() {
+        for (const key in this.data) {
+          this.push({ [key]: this.data[key] });
+        }
+        this.push(null);
+      }
+    });
+    objectStream.data = data;
+    objectStream.pipe(stringifyStream);
+  
+    stringifyStream.on('end', callback);
+  }
+  /**
    * Asynchronously saves JSON data.
+   * @param {string} file - The file to save JSON data.
    */
   save() {
     if (this.filePath) {
-      const writeStream = fs.createWriteStream(this.filePath, { encoding: 'utf8' });
-      const stringifyStream = JSONStream.stringify();
-      stringifyStream.pipe(writeStream);
-      stringifyStream.end(this.data);
-    };
-  };
+      const dataString = JSON.stringify(this.data);
+      const buffer = Buffer.from(dataString);
+      fs.writeFile(this.filePath, buffer, (err) => {
+        if (err) {
+          throw err;
+        } else {
+        }
+      });
+    }
+  }
 
   /**
    * Checks params.
@@ -207,15 +236,13 @@ export class JSONProvider {
    * @param {any} value 
    * @returns {boolean}
    */
-  checkparams(key, value) {
+  checkparams(key) {
     if (typeof key !== 'string') {
       throw new TypeError('The "key" parameter must be a string.');
     } else if (key.length === 0) {
       throw new Error('The "key" parameter cannot be empty.');
     }
-    if (!value) {
-      throw new Error('The "value" parameter cannot be empty.');
-    }
+  
     return true;
   };
 };

@@ -1,6 +1,6 @@
 # meg.db
 
-meg.db is a lightweight, fast, and efficient BSON (Binary JSON) database module for JavaScript. It provides a simple interface to store and retrieve data using BSON files. The module is designed to be efficient, ensuring optimal performance for your database operations.
+meg.db is a lightweight, fast, and efficient BSON (Binary JSON) and JSON database module for JavaScript. It provides a simple interface to store and retrieve data using BSON files. The module is designed to be efficient, ensuring optimal performance for your database operations.
 
 ## Installation
 
@@ -12,12 +12,19 @@ npm install meg.db
 
 ## Usage
 
-To use meg.db in your JavaScript project, import the necessary classes and instantiate a `BSONprovider` object with the path to your BSON file:
+To use meg.db in your JavaScript project, import the necessary classes and instantiate a `BSONProvider` object with the path to your BSON file:
 
 ```javascript
 import { BSONProvider } from "meg.db";
 
 const db = new BSONProvider('./data.bson');
+```
+
+or you can use `JSONProvider` to use JSON based database.
+```javascript
+import { JSONProvider } from "meg.db";
+
+const db = new JSONProvider('./data.json');
 ```
 
 ### Simple Examples

@@ -4,10 +4,34 @@ import benchmark from 'benchmark';
 const dbjson = new JSONProvider('./data.json');
 const dbbson = new BSONProvider('./data.bson');
 
-db.set('key1', 'value1');
+function Benchmark(name, callback) {
+  const start = performance.now();
+  callback();
+  const end = performance.now();
+
+  return console.log(`${name}: ${(end - start).toFixed(0)}ms`);
+};
+
+Benchmark('meg.db-dbbson', () => {
+    for (let i = 0; i < 500; i++) {
+      dbbson.set(`keyring-${i}`, `${i}`);
+    };
+  
+});
+
+Benchmark('meg.db-json', () => {
+    for (let i = 0; i < 500; i++) {
+      dbjson.set(`keyring-${i}`, `${i}`);
+    };
+
+  
+});
+
+/*db.set('key1', 'value1');
 const value = db.get('key1');
 console.log(value);
-
+*/
+/*
 // Benchmark
 const { Suite } = benchmark;
 const suite = new Suite('test');
@@ -30,6 +54,30 @@ suite.add('meg.db-bson', () => {
 
 suite.run({ async: false })
 
+// MS based Benchmark
+function Benchmark(name, callback) {
+  const start = performance.now();
+  callback();
+  const end = performance.now();
+
+  return console.log(`${name}: ${(end - start).toFixed(0)}ms`);
+};
+
+Benchmark('meg.db-dbbson', () => {
+  for (let i = 0; i < 500; i++) {
+    dbbson.set(`keyring-${i}`, `${i}`);
+    dbbson.get(`keyring-${i}`);
+  }
+});
+
+Benchmark('meg.db-json', () => {
+  for (let i = 0; i < 500; i++) {
+    dbjson.set(`keyring-${i}`, `${i}`);
+    dbjson.get(`keyring-${i}`);
+  };
+});
+
+/*
 // Schema
 const userSchema = new BSONSchema('./data.bson', {
   name: { type: 'string', required: true },
@@ -46,4 +94,4 @@ try {
   db.set('user', { name: 'Jane Doe' });
 } catch (error) {
   console.error(error.message); 
-}
+}*/
