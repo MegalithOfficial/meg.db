@@ -1,8 +1,16 @@
-import { BSONProvider, BSONSchema, JSONProvider } from "../src/main.js"
+import { BSONProvider, YAMLProvider, NBTProvider, JSONProvider } from "../src/main.js"
 import benchmark from 'benchmark';
+
+//import Database from 'hypr.db';
+
+//const driver = new Database.YAMLDriver();
+//const db = new Database({ driver });
 
 const dbjson = new JSONProvider('./data.json');
 const dbbson = new BSONProvider('./data.bson');
+const dbyaml = new YAMLProvider('./data.yaml');
+const dbnbt = new NBTProvider('./data.nbt');
+
 
 function Benchmark(name, callback) {
   const start = performance.now();
@@ -16,15 +24,24 @@ Benchmark('meg.db-dbbson', () => {
     for (let i = 0; i < 500; i++) {
       dbbson.set(`keyring-${i}`, `${i}`);
     };
-  
+});
+
+Benchmark('meg.db-dbyaml', () => {
+  for (let i = 0; i < 500; i++) {
+    dbyaml.set(`keyring-${i}`, `${i}`);
+  };
+});
+
+Benchmark('meg.db-nbt', () => {
+  for (let i = 0; i < 500; i++) {
+    dbnbt.set(`keyring-${i}`, `${i}`);
+  };
 });
 
 Benchmark('meg.db-json', () => {
     for (let i = 0; i < 500; i++) {
       dbjson.set(`keyring-${i}`, `${i}`);
     };
-
-  
 });
 
 /*db.set('key1', 'value1');
