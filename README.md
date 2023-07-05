@@ -17,14 +17,28 @@ To use meg.db in your JavaScript project, import the necessary classes and insta
 ```javascript
 import { BSONProvider } from "meg.db";
 
-const db = new BSONProvider('./data.bson');
+const db = new BSONProvider('./megdb.bson');
 ```
 
 or you can use `JSONProvider` to use JSON based database.
 ```javascript
 import { JSONProvider } from "meg.db";
 
-const db = new JSONProvider('./data.json');
+const db = new JSONProvider('./megdb.json');
+```
+
+or you can use `YAMLProvider` to use JSON based database.
+```javascript
+import { YAMLProvider } from "meg.db";
+
+const db = new YAMLProvider('./megdb.yaml');
+```
+
+or you can use `NBTProvider` to use JSON based database.
+```javascript
+import { NBTProvider } from "meg.db";
+
+const db = new YAMLProvider('./megdb.nbt');
 ```
 
 ### Simple Examples
