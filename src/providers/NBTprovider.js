@@ -9,6 +9,7 @@ import JSONStream from 'JSONStream';
 import { Transform } from 'node:stream';
 import nbt from "prismarine-nbt";
 import { kMaxLength } from 'node:buffer';
+import { inspect } from 'node:util';
 
 export class NBTProvider {
 
@@ -18,31 +19,22 @@ export class NBTProvider {
    */
   constructor(filePath) {
     this.filePath = filePath ?? "./megdb.nbt";
-    this.data = { Schemas: {}, default: {} };
+    this.data = {
+      values: {}
+    }
     this.cache = {};
 
     if (filePath && fs.existsSync(filePath)) {
       this.read(filePath);
     } else {
-      const data = {
+      let data = {
+        type: nbt.TagType.Compound,
         name: '',
-        value: {},
-      };
+        value: {}
+      }
       const buffer = nbt.writeUncompressed(data);
       fs.writeFileSync(filePath, buffer);    
     }
-  };
-
-
-  /**
-   * Sets the schema for a given schema name.
-   * @param {string} schemaName - The name of the schema.
-   * @param {object} schema - The schema object.
-   */
-  setSchema(schemaName, schema) {
-    this.checkparams(schemaName, schema);
-    _set(this.data, ['Schemas', schemaName], schema);
-    this.save();
   };
 
   /**
@@ -51,12 +43,8 @@ export class NBTProvider {
     * @param {any} value - The value to set.
     */
   set(key, value) {
-    this.checkparams(key, value);
-    const schema = this.getSchema(key);
-    if (schema) {
-      schema.validate(value);
-    }
-    _set(this.data, ['default', key], value);
+    this.checkparams(key);
+    _set(this.data, ['values', key], value);
     this.cache[key] = value;
     this.save();
   }
@@ -68,11 +56,11 @@ export class NBTProvider {
    */
 
   get(key) {
-    this.checkparams(key, 'get');
+    this.checkparams(key);
     if (key in this.cache) {
       return this.cache[key];
     }
-    const value = _get(this.data, ['default', key]);
+    const value = _get(this.data, ['values', key]);
     this.cache[key] = value;
     return value;
   }
@@ -83,7 +71,7 @@ export class NBTProvider {
    */
   delete(key) {
     this.checkparams(key, 'delete');
-    _unset(this.data, ['default', key]);
+    _unset(this.data, ['values', key]);
     delete this.cache[key];
     this.save();
   }
@@ -95,8 +83,8 @@ export class NBTProvider {
    */
   filter(callback) {
     const filteredData = {};
-    for (const key in this.data.default) {
-      const value = this.data.default[key];
+    for (const key in this.data.values) {
+      const value = this.data.values[key];
       if (callback(key, value)) {
         filteredData[key] = value;
       }
@@ -135,12 +123,8 @@ export class NBTProvider {
    * Deletes all key-value pairs from the default data object.
    * @param {String} type
    */
-  deleteAll(type) {
-    const lowerCaseType = type.toLowerCase();
-    if (lowerCaseType === 'default') this.data.default = {};
-    else if (lowerCaseType === 'schemas') this.data.Schemas = {};
-    else throw new Error(`Unknown type: ${type}. Valid types: schemas, default`);
-
+  deleteAll() {
+    this.data.values = {};
     this.cache = {};
     this.save();
   }
@@ -151,7 +135,7 @@ export class NBTProvider {
    * @returns {object} The default data object.
    */
   all() {
-    return this.data.default;
+    return this.data.values;
   }
 
   /**
@@ -167,14 +151,6 @@ export class NBTProvider {
     }
     return true;
   }
-  /**
-   * Retrieves the schema associated with the specified schema name.
-   * @param {string} schemaName - The name of the schema.
-   * @returns {object} The schema associated with the schema name.
-   */
-  getSchema(schemaName) {
-    return _get(this.data, ['Schemas', schemaName]);
-  };
 
   /**
    * Reads JSON data from a file and assigns it to the data property.
@@ -182,7 +158,9 @@ export class NBTProvider {
    */
   read(file) {
     const rawData = fs.readFileSync(file);
-    this.data = nbt.parseUncompressed(rawData);
+    let parsedData = nbt.parseUncompressed(rawData);
+    let simplified = nbt.simplify(parsedData)
+    _set(this.data, ["values"], simplified);
   }
 
   /**
@@ -192,28 +170,113 @@ export class NBTProvider {
    */
   convertToNbtFormat(data) {
     const nbtData = {
+      type: nbt.TagType.Compound,
       name: '',
       value: {},
     };
-
-    for (const [key, value] of Object.entries(data['default'])) {
-      nbtData.name = key
-      nbtData.value[key] = {
-        type: typeof value,
-        value: value,
-      };
+  
+    for (const [key, value] of Object.entries(data["values"])) {
+      let nbtValue = this.toNBT(value);
+      //console.log(nbtValue)
+      nbtData.value[`${key}`] = nbtValue;
     }
   
     return nbtData;
-  };
+  }
+
+  /**
+   * Converts any data completely to NBT format
+   * @param {any} value 
+   * @returns {nbt.NBT} The converted object.
+   */
+  toNBT(value) {
+    const getTypeAndValue = (val) => {
+      let type;
+      let newValue = val;
+  
+      switch (typeof val) {
+        case "string":
+          type = nbt.TagType.String;
+          break;
+    
+        case "number":
+          if (!isNaN(value) && Number.isInteger(value)) {
+            type = nbt.TagType.Int;
+          } else if (!isNaN(value)) {
+            type = nbt.TagType.Float
+          } else {
+            throw new TypeError("Number data cannot be NaN")
+          }
+          break;
+    
+        case "boolean":
+          type = nbt.TagType.Byte;
+          newValue = Number(val);
+          break;
+    
+        case "object":
+          if (val === null) {
+            throw new TypeError("Data cannot be null.")
+          } else if (Array.isArray(val)) {
+
+          if (val.every((e) => typeof e !== typeof val[0])) {
+              throw new TypeError("All elements in the array must have the same type.");
+          }
+            if (typeof val[0] === "object") {
+              newValue = val.map((e) => this.toNBT(e).value);
+            }
+            newValue = { type: this.toNBT(val[0]).type, value: newValue };
+            type = nbt.TagType.List;
+
+          } else if (val instanceof Map) {
+
+            const entries = Array.from(val.entries()).map(([k, v]) => [k, this.toNBT(v)]);
+            newValue = Object.fromEntries(entries);
+            type = nbt.TagType.Compound;
+
+          } else if (val instanceof Set) {
+
+            const array = Array.from(val);
+            if (array.every((e) => typeof e !== typeof array[0])) {
+              throw new TypeError("All elements in the set must have the same type.");
+            }
+            if (typeof array[0] === "object") {
+              newValue = array.map((e) => this.toNBT(e).value);
+            }
+            newValue = { type: this.toNBT(array[0]).type, value: newValue };
+            type = nbt.TagType.List;
+
+          } else if (val instanceof RegExp) {
+
+            newValue = String(val);
+            type = nbt.TagType.String;
+
+          } else if (val instanceof Object) {
+
+            const entries = Object.entries(val).map(([k, v]) => [k, this.toNBT(v)]);
+            newValue = Object.fromEntries(entries);
+            type = nbt.TagType.Compound;
+
+          }
+          break;
+
+          case "undefined":
+            throw new TypeError("Data cannot be undefined.")
+      }
+  
+      return { type, value: newValue };
+    };
+  
+    return getTypeAndValue(value);
+  }
   
 
   /**
    * Asynchronously saves JSON data.
    * @param {string} file - The file to save JSON data.
    */
-  save() {
-    const nbtData = this.convertToNbtFormat(this.data, 'deneme');
+  async save() {
+    const nbtData = this.convertToNbtFormat(this.data);
     const buffer = nbt.writeUncompressed(nbtData);
     fs.writeFile(this.filePath, buffer, (error) => {
       if (error) {
