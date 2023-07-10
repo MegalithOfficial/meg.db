@@ -5,12 +5,7 @@ import _set from 'lodash.set';
 import _unset from 'lodash.unset';
 import _has from 'lodash.has';
 import _merge from 'lodash.merge';
-import JSONStream from 'JSONStream';
-import { Transform } from 'node:stream';
 import nbt from "prismarine-nbt";
-import { kMaxLength } from 'node:buffer';
-import { inspect } from 'node:util';
-
 export class NBTProvider {
 
   /**
@@ -200,9 +195,9 @@ export class NBTProvider {
           break;
     
         case "number":
-          if (!isNaN(value) && Number.isInteger(value)) {
+          if (!isNaN(val) && Number.isInteger(val)) {
             type = nbt.TagType.Int;
-          } else if (!isNaN(value)) {
+          } else if (!isNaN(val)) {
             type = nbt.TagType.Float
           } else {
             throw new TypeError("Number data cannot be NaN")
