@@ -33,9 +33,11 @@ export class JSONProvider {
    * @param {object} schema - The schema object.
    */
   setSchema(schemaName, schema) {
-    this.checkparams(schemaName, schema);
-    _set(this.data, ['Schemas', schemaName], schema);
-    this.save();
+    if (!this.data.Schemas.hasOwnProperty(schemaName)) {
+      this.checkparams(schemaName, schema);
+      _set(this.data.Schemas, schemaName, schema);
+      this.save();
+    }
   };
 
   /**
@@ -46,6 +48,7 @@ export class JSONProvider {
   set(key, value) {
     this.checkparams(key, value);
     const schema = this.getSchema(key);
+    console.log(schema);
     if (schema) {
       schema.validate(value);
     }
@@ -166,7 +169,7 @@ export class JSONProvider {
    * @returns {object} The schema associated with the schema name.
    */
   getSchema(schemaName) {
-    return _get(this.data, ['Schemas', schemaName]);
+    return this.data.Schemas[schemaName] ?? null;
   };
 
   /**

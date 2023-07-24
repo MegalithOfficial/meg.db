@@ -1,4 +1,4 @@
-import { BSONProvider, YAMLProvider, NBTProvider, JSONProvider } from "../src/main.js"
+import { BSONProvider, YAMLProvider, NBTProvider, JSONProvider, JSONSchema } from "../src/main.js"
 import benchmark from 'benchmark';
 
 //import Database from 'hypr.db';
@@ -6,7 +6,8 @@ import benchmark from 'benchmark';
 //const driver = new Database.YAMLDriver();
 //const db = new Database({ driver });
 
-const dbjson = new JSONProvider('./data.json');
+const db = new JSONProvider('./data.json');
+/*
 const dbbson = new BSONProvider('./data.bson');
 const dbyaml = new YAMLProvider('./data.yaml');
 const dbnbt = new NBTProvider('./data.nbt');
@@ -42,7 +43,7 @@ Benchmark('meg.db-json', () => {
     for (let i = 0; i < 500; i++) {
       dbjson.set(`keyring-${i}`, `${i}`);
     };
-});
+});*/
 
 /*db.set('key1', 'value1');
 const value = db.get('key1');
@@ -93,22 +94,19 @@ Benchmark('meg.db-json', () => {
     dbjson.get(`keyring-${i}`);
   };
 });
+*/
 
-/*
 // Schema
-const userSchema = new BSONSchema('./data.bson', {
+const userSchema = new JSONSchema('./data.json', {
   name: { type: 'string', required: true },
   age: { type: 'number', required: true },
-  email: { type: 'string', required: false },
+  email: { type: 'string', required: false, default: "test" },
 });
 db.setSchema('user', userSchema);
-
-db.set('user', { name: 'John Doe', age: 30, email: 'johndoe@example.com' });
-const data = db.get("user");
-console.log(data)
+db.set("hi", "hello!")
 
 try {
-  db.set('user', { name: 'Jane Doe' });
+  db.set('user', { name: 'Jane Doe', age: 15, email: 'uwu'});
 } catch (error) {
-  console.error(error.message); 
-}*/
+  console.error(error.stack); 
+}
