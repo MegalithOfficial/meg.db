@@ -38,7 +38,7 @@ or you can use `NBTProvider` to use NBT based database.
 ```javascript
 import { NBTProvider } from "meg.db";
 
-const db = new YAMLProvider('./megdb.nbt');
+const db = new NBTProvider('./megdb.nbt');
 ```
 
 ### Simple Examples
@@ -68,6 +68,8 @@ console.log(db.get('array1')); // Output: ["hi", 1, null, true]
 ### Database Schemas
 
 Module also supports optional schema validation using the `BSONSchema` class. You can define a schema to enforce a specific structure and data types for a collection, but it is not mandatory.
+
+### Currently Disabled for rework.
 
 ```javascript
 import { BSONprovider, BSONSchema } from "meg.db";
