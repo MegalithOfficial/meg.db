@@ -1,5 +1,5 @@
 import { BSONProvider, YAMLProvider, NBTProvider, JSONProvider } from "../src/main.js"
-import benchmark from 'benchmark';
+import Benchmark from 'hyprbench';
 
 //import Database from 'hypr.db';
 
@@ -11,7 +11,7 @@ const dbbson = new BSONProvider('./data.bson');
 const dbyaml = new YAMLProvider('./data.yaml');
 const dbnbt = new NBTProvider('./data.nbt');
 
-
+/*
 function Benchmark(name, callback) {
   const start = performance.now();
   callback();
@@ -19,30 +19,38 @@ function Benchmark(name, callback) {
 
   return console.log(`${name}: ${(end - start).toFixed(0)}ms`);
 };
+*/
 
-Benchmark('meg.db-dbbson', () => {
+const benchmark = new Benchmark();
+
+benchmark.on('cyclone', (data) => console.log(data));
+benchmark.on('complete', (data) => console.log(data));
+
+benchmark.set('meg.db-dbbson', () => {
     for (let i = 0; i < 500; i++) {
-      dbbson.set(`keyring-${i}`, `${i}`);
+      dbbson.push(`keyring-${i}`, `${i}`);
     };
 });
 
-Benchmark('meg.db-dbyaml', () => {
+benchmark.set('meg.db-dbyaml', () => {
   for (let i = 0; i < 500; i++) {
-    dbyaml.set(`keyring-${i}`, `${i}`);
+    dbyaml.push(`keyring-${i}`, `${i}`);
   };
 });
 
-Benchmark('meg.db-nbt', () => {
+benchmark.set('meg.db-nbt', () => {
   for (let i = 0; i < 500; i++) {
-    dbnbt.set(`keyring-${i}`, `${i}`);
+    dbnbt.push(`keyring-${i}`, `${i}`);
   };
 });
 
-Benchmark('meg.db-json', () => {
+benchmark.set('meg.db-json', () => {
     for (let i = 0; i < 500; i++) {
-      dbjson.set(`keyring-${i}`, `${i}`);
+      dbjson.push(`keyring-${i}`, `${i}`);
     };
 });
+
+benchmark.run(1);
 
 /*db.set('key1', 'value1');
 const value = db.get('key1');

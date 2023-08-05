@@ -1,11 +1,10 @@
-import { BSON } from 'bson';
+import BSON from 'bson-ext';
 import fs from 'graceful-fs';
 import _get from 'lodash.get';
 import _set from 'lodash.set';
 import _unset from 'lodash.unset';
 import _has from 'lodash.has';
 import _merge from 'lodash.merge';
-import { Transform } from 'node:stream';
 
 export class BSONProvider {
 
@@ -15,8 +14,11 @@ export class BSONProvider {
    */
   constructor(filePath) {
     this.filePath = filePath ?? "./megdb.bson";
-    this.data = { Schemas: {}, default: {} };
-    this.cache = {};
+    this.data = {
+      Schemas: new Map(),
+      default: new Map(),
+    };
+    this.cache = new Map();
 
     if (filePath && fs.existsSync(filePath)) {
       this.read(filePath);
@@ -26,14 +28,15 @@ export class BSONProvider {
   }
 
   /**
+   * @private
    * Sets the schema for a given schema name.
    * @param {string} schemaName - The name of the schema.
    * @param {object} schema - The schema object.
    */
   setSchema(schemaName, schema) {
-    this.checkparams(schemaName, schema);
-    _set(this.data, ['Schemas', schemaName], schema);
-    this.save();
+    //this.checkparams(schemaName, schema);
+    this.data.Schemas.set(schemaName, schema); // Use Map.set() to set schema
+    this.save(); // Save after updating the schema
   }
 
   /**
@@ -42,14 +45,14 @@ export class BSONProvider {
    * @param {any} value - The value to set.
    */
   set(key, value) {
-    this.checkparams(key, value);
+    //this.checkparams(key, value);
     const schema = this.getSchema(key);
     if (schema) {
       schema.validate(value);
     }
-    _set(this.data, ['default', key], value);
-    this.save();
-    this.cache[key] = value;
+    this.data.default.set(key, value); // Use Map.set() to set the key-value pair
+    this.cache.set(key, value); // Cache the updated value
+    this.save(); // Save after updating the data
   }
 
   /**
@@ -58,24 +61,27 @@ export class BSONProvider {
    * @returns {any} The value associated with the key.
    */
   get(key) {
-    this.checkparams(key, 'get');
-    if (key in this.cache) {
-      return this.cache[key];
+    //this.checkparams(key, 'get');
+    if (this.cache.has(key)) {
+      return this.cache.get(key); // Return cached value if available
     }
-    const value = _get(this.data, ['default', key]);
+    const value = this.data.default.get(key); // Use Map.get() to retrieve the value
+    this.cache.set(key, value); // Cache the value for future use
     return value;
   }
+
 
   /**
    * Deletes the key-value pair associated with the specified key from the default data object.
    * @param {string} key - The key to delete.
    */
   delete(key) {
-    this.checkparams(key, 'delete');
-    _unset(this.data, ['default', key]);
-    delete this.cache[key];
-    this.save();
+   // this.checkparams(key, 'delete');
+    this.data.default.delete(key); 
+    this.cache.delete(key); 
+    this.save(); 
   }
+
 
   /**
    * Filters the default data object based on the provided callback function.
@@ -142,7 +148,7 @@ export class BSONProvider {
     else if (lowerCaseType === 'schemas') this.data.Schemas = {};
     else throw new Error(`Unknown type: ${type}. Valid types: schemas, default`);
 
-    this.cache = {};
+    this.cache = new Map();
     this.save();
   }
 
@@ -169,6 +175,7 @@ export class BSONProvider {
   }
 
   /**
+   * @private
    * Retrieves the schema associated with the specified schema name.
    * @param {string} schemaName - The name of the schema.
    * @returns {object} The schema associated with the schema name.
@@ -183,33 +190,17 @@ export class BSONProvider {
    */
 
   read(file) {
-    const stream = fs.createReadStream(file, { encoding: 'utf8' });
-    const transform = new Transform({
-      transform: (chunk, e, c) => {
-        try {
-          _merge(this.data, BSON.deserialize(chunk))
-          this.cache = {};
-        } catch (error) {
-          throw error;
-        }
-      }
-    });
-  
-    stream.pipe(transform);
-  
-    transform.on('error', (err) => {
-      throw err;
-    });
+    const data = fs.readFileSync(file, { encoding: 'utf8' });
+    _merge(this.data, BSON.deserialize(data))
   }
-  
 
-save() {
-  if (this.filePath) {
-    const stream = fs.createWriteStream(this.filePath);
-    stream.write(BSON.serialize(this.data));
-    stream.end();
+
+  save() {
+    if (this.filePath) {
+      const data = BSON.serialize(this.data)
+      fs.writeFileSync(this.filePath, data);
+    }
   }
-}
 
   /**
    * Checks params.

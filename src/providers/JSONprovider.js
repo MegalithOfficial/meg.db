@@ -5,8 +5,6 @@ import _set from 'lodash.set';
 import _unset from 'lodash.unset';
 import _has from 'lodash.has';
 import _merge from 'lodash.merge';
-import JSONStream from 'JSONStream';
-import { Transform } from 'node:stream';
 
 export class JSONProvider {
 
@@ -16,8 +14,11 @@ export class JSONProvider {
    */
   constructor(filePath) {
     this.filePath = filePath ?? "./megdb.json";
-    this.data = { Schemas: {}, default: {} };
-    this.cache = {};
+    this.data = {
+      Schemas: new Map(),
+      default: new Map(),
+    };
+    this.cache = new Map();
 
     if (filePath && fs.existsSync(filePath)) {
       this.read(filePath);
@@ -28,29 +29,32 @@ export class JSONProvider {
 
 
   /**
+   * @private
    * Sets the schema for a given schema name.
    * @param {string} schemaName - The name of the schema.
    * @param {object} schema - The schema object.
    */
   setSchema(schemaName, schema) {
-    this.checkparams(schemaName, schema);
-    _set(this.data, ['Schemas', schemaName], schema);
+    //this.checkParams(schemaName, schema);
+    this.data.Schemas.set(schemaName, schema);
     this.save();
   };
 
+
+
   /**
-    * Sets a key-value pair in the default data object.
-    * @param {string} key - The key to set.
-    * @param {any} value - The value to set.
-    */
+   * Sets a key-value pair in the default data object.
+   * @param {string} key - The key to set.
+   * @param {any} value - The value to set.
+   */
   set(key, value) {
-    this.checkparams(key, value);
+    //this.checkParams(key, value);
     const schema = this.getSchema(key);
     if (schema) {
       schema.validate(value);
     }
-    _set(this.data, ['default', key], value);
-    this.cache[key] = value;
+    this.data.default.set(key, value);
+    this.cache.set(key, value); // Cache the updated value
     this.save();
   }
 
@@ -61,12 +65,12 @@ export class JSONProvider {
    */
 
   get(key) {
-    this.checkparams(key, 'get');
-    if (key in this.cache) {
-      return this.cache[key];
+    //this.checkParams(key, 'get');
+    if (this.cache.has(key)) {
+      return this.cache.get(key); // Return cached value if available
     }
-    const value = _get(this.data, ['default', key]);
-    this.cache[key] = value;
+    const value = this.data.default.get(key);
+    this.cache.set(key, value); // Cache the value for future use
     return value;
   }
 
@@ -75,9 +79,9 @@ export class JSONProvider {
    * @param {string} key - The key to delete.
    */
   delete(key) {
-    this.checkparams(key, 'delete');
-    _unset(this.data, ['default', key]);
-    delete this.cache[key];
+    //this.checkParams(key, 'delete');
+    this.data.default.delete(key);
+    this.cache.delete(key); // Remove from cache as well
     this.save();
   }
 
@@ -103,7 +107,7 @@ export class JSONProvider {
    * @param {any} value - The value to add to the array.
    */
   push(key, value) {
-    this.checkparams(key, value);
+    //this.checkparams(key, value);
     const array = this.get(key) || [];
     array.push(value);
     this.set(key, array);
@@ -115,7 +119,7 @@ export class JSONProvider {
    * @param {any} value - The value to remove from the array.
    */
   pull(key, value) {
-    this.checkparams(key, value);
+    //this.checkparams(key, value);
     const array = this.get(key) || [];
     const index = array.indexOf(value);
     if (index > -1) {
@@ -161,6 +165,7 @@ export class JSONProvider {
     return true;
   }
   /**
+   * @private
    * Retrieves the schema associated with the specified schema name.
    * @param {string} schemaName - The name of the schema.
    * @returns {object} The schema associated with the schema name.
@@ -174,8 +179,12 @@ export class JSONProvider {
    * @param {string} file - The file to read JSON data from.
    */
   read(file) {
-    _merge(this.data, JSON.parse(fs.readFileSync(file, { encoding: 'utf8' })))
+    const jsonData = JSON.parse(fs.readFileSync(file, { encoding: 'utf8' }));
+    this.data.Schemas = new Map(Object.entries(jsonData.Schemas));
+    this.data.default = new Map(Object.entries(jsonData.default));
+    this.cache.clear(); // Clear cache after reading new data
   }
+
 
   /**
    * Asynchronously saves JSON data.
@@ -183,14 +192,12 @@ export class JSONProvider {
    */
   save() {
     if (this.filePath) {
-      const dataString = JSON.stringify(this.data);
-      const buffer = Buffer.from(dataString);
-      fs.writeFile(this.filePath, buffer, (err) => {
-        if (err) {
-          throw err;
-        } else {
-        }
-      });
+      const dataToSave = {
+        Schemas: Object.fromEntries(this.data.Schemas),
+        default: Object.fromEntries(this.data.default),
+      };
+      const dataString = JSON.stringify(dataToSave);
+      fs.writeFileSync(this.filePath, dataString, { encoding: 'utf8' });
     }
   }
 

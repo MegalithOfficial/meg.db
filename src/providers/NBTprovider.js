@@ -172,7 +172,6 @@ export class NBTProvider {
   
     for (const [key, value] of Object.entries(data["values"])) {
       let nbtValue = this.toNBT(value);
-      //console.log(nbtValue)
       nbtData.value[`${key}`] = nbtValue;
     }
   

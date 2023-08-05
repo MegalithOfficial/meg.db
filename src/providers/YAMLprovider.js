@@ -27,6 +27,7 @@ export class YAMLProvider {
 
 
   /**
+   * @private
    * Sets the schema for a given schema name.
    * @param {string} schemaName - The name of the schema.
    * @param {object} schema - The schema object.
@@ -160,6 +161,7 @@ export class YAMLProvider {
     return true;
   }
   /**
+   * @private
    * Retrieves the schema associated with the specified schema name.
    * @param {string} schemaName - The name of the schema.
    * @returns {object} The schema associated with the schema name.
