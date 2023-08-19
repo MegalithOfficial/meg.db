@@ -1,106 +1,59 @@
-import { BSONProvider, YAMLProvider, NBTProvider, JSONProvider } from "../src/main.js"
+import { BSONProvider, NBTProvider, JSONProvider } from "../src/main.js"
 import Benchmark from 'hyprbench';
+import { QuickDB } from "quick.db";
 
-//import Database from 'hypr.db';
+const dbjson = new JSONProvider({ filePath: "./data.json", useExperimentalSaveMethod: true });
+const dbbson = new BSONProvider({ filePath: "./data.bson", useExperimentalSaveMethod: true });
+const dbnbt = new NBTProvider({ filePath: "./data.nbt", useExperimentalSaveMethod: true });
 
-//const driver = new Database.YAMLDriver();
-//const db = new Database({ driver });
-
-const dbjson = new JSONProvider('./data.json');
-const dbbson = new BSONProvider('./data.bson');
-const dbyaml = new YAMLProvider('./data.yaml');
-const dbnbt = new NBTProvider('./data.nbt');
-
-/*
-function Benchmark(name, callback) {
-  const start = performance.now();
-  callback();
-  const end = performance.now();
-
-  return console.log(`${name}: ${(end - start).toFixed(0)}ms`);
-};
-*/
+const qdb = new QuickDB(); 
 
 const benchmark = new Benchmark();
 
-benchmark.on('cyclone', (data) => console.log(data));
-benchmark.on('complete', (data) => console.log(data));
+benchmark.on('complete', (data) => {
+  data.sort((a, b) => a.time - b.time);
+
+  data.forEach((item, index) => {
+    console.log(`${index + 1}. ${item.name} - Performance: ${item.performance} / Time: ${item.time.toFixed(0)} Milisecond.`);
+  });
+});
+
+benchmark.set('meg.db-json', () => {
+  for (let i = 0; i < 500; i++) {
+    dbjson.set(`keyring-${i}`, `${i}`);
+  };
+});
 
 benchmark.set('meg.db-dbbson', () => {
     for (let i = 0; i < 500; i++) {
-      dbbson.push(`keyring-${i}`, `${i}`);
+      dbbson.set(`keyring-${i}`, `${i}`);
     };
-});
-
-benchmark.set('meg.db-dbyaml', () => {
-  for (let i = 0; i < 500; i++) {
-    dbyaml.push(`keyring-${i}`, `${i}`);
-  };
 });
 
 benchmark.set('meg.db-nbt', () => {
   for (let i = 0; i < 500; i++) {
-    dbnbt.push(`keyring-${i}`, `${i}`);
+    dbnbt.set(`keyring-${i}`, `${i}`);
   };
 });
 
 benchmark.set('meg.db-json', () => {
     for (let i = 0; i < 500; i++) {
-      dbjson.push(`keyring-${i}`, `${i}`);
+      dbjson.set(`keyring-${i}`, `${i}`);
     };
 });
 
-benchmark.run(1);
+benchmark.set('quick.db-sqlite', () => {
+  for (let i = 0; i < 500; i++) {
+    qdb.set(`keyring-${i}`, `${i}`);
+  };
+});
+
+benchmark.run(2);
 
 /*db.set('key1', 'value1');
 const value = db.get('key1');
 console.log(value);
 */
-/*
-// Benchmark
-const { Suite } = benchmark;
-const suite = new Suite('test');
-
-suite.on('cycle', (event) => console.log(String(event.target)));
-suite.on('complete', (event) => event.currentTarget.sort((a, b) => b.hz - a.hz).map((benchmark, index) => console.log(`${index + 1}. ${benchmark.name} - ${benchmark.hz.toFixed(3)}/ops`)));
-
-suite.add('meg.db-json', () => {
-  for (let i = 0; i < 500; i++) {
-    dbjson.set(`keyring-${i}`, `${i}`);
-    dbjson.get(`keyring-${i}`);
-  }
-});
-suite.add('meg.db-bson', () => {
-  for (let i = 0; i < 500; i++) {
-    dbbson.set(`keyring-${i}`, `${i}`);
-    dbbson.get(`keyring-${i}`);
-  }
-});
-
-suite.run({ async: false })
-
-// MS based Benchmark
-function Benchmark(name, callback) {
-  const start = performance.now();
-  callback();
-  const end = performance.now();
-
-  return console.log(`${name}: ${(end - start).toFixed(0)}ms`);
-};
-
-Benchmark('meg.db-dbbson', () => {
-  for (let i = 0; i < 500; i++) {
-    dbbson.set(`keyring-${i}`, `${i}`);
-    dbbson.get(`keyring-${i}`);
-  }
-});
-
-Benchmark('meg.db-json', () => {
-  for (let i = 0; i < 500; i++) {
-    dbjson.set(`keyring-${i}`, `${i}`);
-    dbjson.get(`keyring-${i}`);
-  };
-});
 
 /*
 // Schema

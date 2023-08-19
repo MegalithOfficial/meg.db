@@ -41,7 +41,7 @@ declare module "meg.db" {
     private save(): void;
   };
 
-  export class YAMLProvider<T extends DatabaseSignature<T> = DatabaseMap> {
+/*  export class YAMLProvider<T extends DatabaseSignature<T> = DatabaseMap> {
     constructor(filePath?: string);
 
     public setSchema(schemaName: string, schema: object): void;
@@ -60,7 +60,7 @@ declare module "meg.db" {
     private getSchema(schemaName: string): DatabaseSchema;
     private read(file: string): void;
     private save(): void;
-  };
+  };*/
 
   export class NBTProvider<T extends DatabaseSignature<T> = DatabaseMap> {
     constructor(filePath?: string);
@@ -108,9 +108,9 @@ declare module "meg.db" {
     validate(document: Record<string, any>): void;
   };
 
-  export class YAMLSchema extends JSONProvider {
+ /* export class YAMLSchema extends JSONProvider {
     constructor(filepath: string, fields: SchemaFields);
 
     validate(document: Record<string, any>): void;
-  };
+  };*/
 };

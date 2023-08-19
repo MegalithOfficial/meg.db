@@ -1,7 +1,6 @@
 
 import fs from 'graceful-fs';
 import _get from 'lodash.get';
-import _set from 'lodash.set';
 import _unset from 'lodash.unset';
 import _has from 'lodash.has';
 import _merge from 'lodash.merge';
@@ -9,19 +8,51 @@ import _merge from 'lodash.merge';
 export class JSONProvider {
 
   /**
-   * Constructs a new instance of the BSONprovider class.
-   * @param {string} filePath - The file path to read and save JSON data.
+   * Constructs a new instance of the JSONprovider class.
+   * @param {filePath: string, useExperimentalSaveMethod: boolean} opt Options for JSONProvider
    */
-  constructor(filePath) {
-    this.filePath = filePath ?? "./megdb.json";
+  constructor(opt = { filePath: "./megdb.json", useExperimentalSaveMethod: false }) {
+
+    /**
+     * @type {string} 
+     * @readonly
+     * @private
+     */
+    this.filePath = opt.filePath ?? "./megdb.json";
+
+    /**
+     * @type {Boolean}
+     * @readonly
+     * @private
+     */
+    this.useExperimentalSaveMethod = opt.useExperimentalSaveMethod ?? false;
+
+    /**
+     * Container for holding data, including schemas and default values.
+     * @type {Object}
+     * @property {Map<string, any>} Schemas - A map to store schema data.
+     * @property {Map<string, any>} default - A map to store default data.
+     * @private
+     */
     this.data = {
       Schemas: new Map(),
       default: new Map(),
     };
+
+    /**
+     * @type {Map}
+     * @private
+     */
     this.cache = new Map();
 
-    if (filePath && fs.existsSync(filePath)) {
-      this.read(filePath);
+    /**
+     * @type {null}
+     * @private
+     */
+    this.timer = null;
+
+    if (this.filePath && fs.existsSync(this.filePath)) {
+      this.read(this.filePath);
     } else {
       this.save();
     }
@@ -63,14 +94,13 @@ export class JSONProvider {
    * @param {string} key - The key to retrieve the value for.
    * @returns {any} The value associated with the key.
    */
-
   get(key) {
     //this.checkParams(key, 'get');
     if (this.cache.has(key)) {
-      return this.cache.get(key); // Return cached value if available
+      return this.cache.get(key); 
     }
     const value = this.data.default.get(key);
-    this.cache.set(key, value); // Cache the value for future use
+    this.cache.set(key, value);
     return value;
   }
 
@@ -138,7 +168,7 @@ export class JSONProvider {
     else if (lowerCaseType === 'schemas') this.data.Schemas = {};
     else throw new Error(`Unknown type: ${type}. Valid types: schemas, default`);
 
-    this.cache = {};
+    this.cache.clear();
     this.save();
   }
 
@@ -164,6 +194,7 @@ export class JSONProvider {
     }
     return true;
   }
+  
   /**
    * @private
    * Retrieves the schema associated with the specified schema name.
@@ -182,15 +213,27 @@ export class JSONProvider {
     const jsonData = JSON.parse(fs.readFileSync(file, { encoding: 'utf8' }));
     this.data.Schemas = new Map(Object.entries(jsonData.Schemas));
     this.data.default = new Map(Object.entries(jsonData.default));
-    this.cache.clear(); // Clear cache after reading new data
+    this.cache.clear(); 
   }
-
 
   /**
    * Asynchronously saves JSON data.
-   * @param {string} file - The file to save JSON data.
    */
   save() {
+    if (this.useExperimentalSaveMethod) {
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => {
+        this.savetofile();
+      }, 2000);
+
+    } else this.savetofile();
+  };
+
+  /**
+   * Asynchronously saves JSON data.
+   * @private
+   */
+  savetofile() {
     if (this.filePath) {
       const dataToSave = {
         Schemas: Object.fromEntries(this.data.Schemas),
@@ -214,7 +257,7 @@ export class JSONProvider {
     } else if (key.length === 0) {
       throw new Error('The "key" parameter cannot be empty.');
     }
-  
+
     return true;
   };
 };

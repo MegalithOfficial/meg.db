@@ -1,27 +1,56 @@
 import BSON from 'bson-ext';
 import fs from 'graceful-fs';
 import _get from 'lodash.get';
-import _set from 'lodash.set';
-import _unset from 'lodash.unset';
-import _has from 'lodash.has';
 import _merge from 'lodash.merge';
 
 export class BSONProvider {
 
   /**
    * Constructs a new instance of the BSONprovider class.
-   * @param {string} filePath - The file path to read and save BSON data.
+   * @param {filePath: string, useExperimentalSaveMethod: boolean} opt Options for BSONProvider
    */
-  constructor(filePath) {
-    this.filePath = filePath ?? "./megdb.bson";
+  constructor(opt = { filePath: "./megdb.bson", useExperimentalSaveMethod: false }) {
+
+    /**
+     * @type {string} 
+     * @readonly
+     * @private
+     */
+    this.filePath = opt.filePath ?? "./megdb.bson";
+
+    /**
+     * @type {Boolean}
+     * @readonly
+     * @private
+     */
+    this.useExperimentalSaveMethod = opt.useExperimentalSaveMethod ?? false;
+
+    /**
+     * Container for holding data, including schemas and default values.
+     * @type {Object}
+     * @property {Map<string, any>} Schemas - A map to store schema data.
+     * @property {Map<string, any>} default - A map to store default data.
+     * @private
+     */
     this.data = {
       Schemas: new Map(),
       default: new Map(),
     };
+
+    /**
+     * @type {Map}
+     * @private
+     */
     this.cache = new Map();
 
-    if (filePath && fs.existsSync(filePath)) {
-      this.read(filePath);
+    /**
+     * @type {null}
+     * @private
+     */
+    this.timer = null;
+
+    if (this.filePath && fs.existsSync(this.filePath)) {
+      this.read(this.filePath);
     } else {
       this.save();
     }
@@ -76,10 +105,10 @@ export class BSONProvider {
    * @param {string} key - The key to delete.
    */
   delete(key) {
-   // this.checkparams(key, 'delete');
-    this.data.default.delete(key); 
-    this.cache.delete(key); 
-    this.save(); 
+    // this.checkparams(key, 'delete');
+    this.data.default.delete(key);
+    this.cache.delete(key);
+    this.save();
   }
 
 
@@ -194,8 +223,24 @@ export class BSONProvider {
     _merge(this.data, BSON.deserialize(data))
   }
 
-
+  /**
+   * Asynchronously saves JSON data.
+   */
   save() {
+    if (this.useExperimentalSaveMethod) {
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => {
+        this.savetofile();
+      }, 2000);
+
+    } else this.savetofile();
+  };
+
+  /**
+   * Asynchronously saves BSON data.
+   * @private
+   */
+  savetofile() {
     if (this.filePath) {
       const data = BSON.serialize(this.data)
       fs.writeFileSync(this.filePath, data);

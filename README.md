@@ -27,13 +27,6 @@ import { JSONProvider } from "meg.db";
 const db = new JSONProvider('./megdb.json');
 ```
 
-or you can use `YAMLProvider` to use YAML based database.
-```javascript
-import { YAMLProvider } from "meg.db";
-
-const db = new YAMLProvider('./megdb.yaml');
-```
-
 or you can use `NBTProvider` to use NBT based database.
 ```javascript
 import { NBTProvider } from "meg.db";

@@ -10,17 +10,47 @@ export class NBTProvider {
 
   /**
    * Constructs a new instance of the BSONprovider class.
-   * @param {string} filePath - The file path to read and save NBT data.
+   * @param {filePath: string, useExperimentalSaveMethod: boolean} opt Options for NBTProvider
    */
-  constructor(filePath) {
-    this.filePath = filePath ?? "./megdb.nbt";
+  constructor(opt = { filePath: "./megdb.nbt", useExperimentalSaveMethod: false }) {
+
+    /**
+     * @type {string} 
+     * @readonly
+     * @private
+     */
+    this.filePath = opt.filePath ?? "./megdb.nbt";
+
+    /**
+     * @type {Boolean}
+     * @readonly
+     * @private
+     */
+    this.useExperimentalSaveMethod = opt.useExperimentalSaveMethod ?? false;
+
+    /**
+     * Container for holding data.
+     * @type {Object}
+     * @property {Object<string, any>} values A map to store data.
+     * @private
+     */
     this.data = {
       values: {}
     }
+
+    /**
+     * @type {null}
+     * @private
+     */
+    this.timer = null;
+
+    /**
+     * @type {Map}
+     */
     this.cache = {};
 
-    if (filePath && fs.existsSync(filePath)) {
-      this.read(filePath);
+    if (this.filePath && fs.existsSync(this.filePath)) {
+      this.read(this.filePath);
     } else {
       let data = {
         type: nbt.TagType.Compound,
@@ -28,7 +58,7 @@ export class NBTProvider {
         value: {}
       }
       const buffer = nbt.writeUncompressed(data);
-      fs.writeFileSync(filePath, buffer);    
+      fs.writeFileSync(this.filePath, buffer);    
     }
   };
 
@@ -264,12 +294,24 @@ export class NBTProvider {
     return getTypeAndValue(value);
   }
   
+  /**
+   * Asynchronously saves JSON data.
+   */
+  save() {
+    if (this.useExperimentalSaveMethod) {
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => {
+        this.savetofile();
+      }, 2000);
+
+    } else this.savetofile();
+  };
 
   /**
    * Asynchronously saves JSON data.
-   * @param {string} file - The file to save JSON data.
+   * @private
    */
-  async save() {
+  async savetofile() {
     const nbtData = this.convertToNbtFormat(this.data);
     const buffer = nbt.writeUncompressed(nbtData);
     fs.writeFile(this.filePath, buffer, (error) => {
