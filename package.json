@@ -33,7 +33,7 @@
     "Database Management"
   ],
   "author": "MegalithOffical",
-  "license": "LGPL-3.0-or-later",
+  "license": "SEE LICENCE.md",
   "dependencies": {
     "bson-ext": "^4.0.3",
     "graceful-fs": "^4.2.11",
