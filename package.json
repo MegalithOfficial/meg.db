@@ -33,7 +33,7 @@
     "Database Management"
   ],
   "author": "MegalithOffical",
-  "license": "SEE LICENCE.md",
+  "license": "Apache-2.0",
   "dependencies": {
     "bson-ext": "^4.0.3",
     "graceful-fs": "^4.2.11",
