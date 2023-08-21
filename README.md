@@ -130,7 +130,7 @@ console.log(db.get('user'));
 
 ## License
 
-This module is open source and available under the [MIT License](https://opensource.org/licenses/MIT).
+This module is open source and available under the [GNU License](https://opensource.org/license/gpl-3-0/).
 
 ## Contributing
 
