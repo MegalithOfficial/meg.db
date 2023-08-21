@@ -37,7 +37,6 @@
   "dependencies": {
     "bson-ext": "^4.0.3",
     "graceful-fs": "^4.2.11",
-    "hyprbench": "^1.0.2",
     "lodash.get": "^4.4.2",
     "lodash.merge": "^4.6.2",
     "node-cron": "^3.0.2",
