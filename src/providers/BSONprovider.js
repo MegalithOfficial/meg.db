@@ -9,8 +9,7 @@ export class BSONProvider {
    * Constructs a new instance of the BSONprovider class.
    * @param {filePath: string, useExperimentalSaveMethod: boolean} opt Options for BSONProvider
    */
-  constructor(opt = { filePath: "./megdb.bson", useExperimentalSaveMethod: false }) {
-
+  constructor(opt = { filePath: "./megdb.json", useExperimentalSaveMethod: false, backupOptions: { enabled: false, CronJobPattern: " 0 0 * * * *", timezone: "Europe/Istanbul", folderPath: "./backups" } }) {
     /**
      * @type {string} 
      * @readonly
@@ -54,18 +53,6 @@ export class BSONProvider {
     } else {
       this.save();
     }
-  }
-
-  /**
-   * @private
-   * Sets the schema for a given schema name.
-   * @param {string} schemaName - The name of the schema.
-   * @param {object} schema - The schema object.
-   */
-  setSchema(schemaName, schema) {
-    //this.checkparams(schemaName, schema);
-    this.data.Schemas.set(schemaName, schema); // Use Map.set() to set schema
-    this.save(); // Save after updating the schema
   }
 
   /**
@@ -188,31 +175,7 @@ export class BSONProvider {
   all() {
     return this.data.default;
   }
-
-  /**
-   * Moves data from other databases to meg.db.
-   * @param {Object} opt 
-   * @returns {boolean}
-   */
-  move(data) {
-    if (!data.constructor) throw new Error('Invalid database class.');
-    const datas = data.all() || data.getAll();
-    for (let key in datas) {
-      this.set(key, datas[key]);
-    }
-    return true;
-  }
-
-  /**
-   * @private
-   * Retrieves the schema associated with the specified schema name.
-   * @param {string} schemaName - The name of the schema.
-   * @returns {object} The schema associated with the schema name.
-   */
-  getSchema(schemaName) {
-    return _get(this.data, ['Schemas', schemaName]);
-  }
-
+  
   /**
    * Reads BSON data from a file and assigns it to the data property.
    * @param {string} file - The file to read BSON data from.

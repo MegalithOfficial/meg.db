@@ -1,10 +1,21 @@
 # meg.db
 
-meg.db is a lightweight, fast, and efficient BSON (Binary JSON) and JSON database module for JavaScript. It provides a simple interface to store and retrieve data using BSON files. The module is designed to be efficient, ensuring optimal performance for your database operations.
+🚀 **meg.db** is a lightweight, fast, and efficient BSON (Binary JSON), JSON, and NBT database module for JavaScript. It provides a simple interface to store and retrieve data using BSON files. The module is designed to be efficient, ensuring optimal performance for your database operations.
+
+## Features
+
+- **Lightweight**: Engineered for minimal footprint and low resource usage. 🪶
+- **Fast**: Optimized for efficient data storage and retrieval operations. ⚡
+- **Efficient**: Utilizes efficient algorithms and data structures for optimal performance. 🏎️
+- **User-Friendly**: Offers an intuitive interface for smooth interaction with the database. 🤝
+- **ESM Support**: Compatible with ES modules for modern JavaScript development. 📦
+- **Database Migration**: Seamlessly migrate data from other databases to **meg.db**. 🔄
+- **Backup Feature**: Create backups with ease and customize options such as time, timezone, and folder path. 📂🗄️
+- **Experimental Save Method**: An advanced saving method for improved performance (use with caution). 🔧⚙️
 
 ## Installation
 
-You can install meg.db using npm:
+You can easily install **meg.db** using npm:
 
 ```shell
 npm install meg.db
@@ -12,57 +23,94 @@ npm install meg.db
 
 ## Usage
 
-To use meg.db in your JavaScript project, import the necessary classes and instantiate a `BSONProvider` object with the path to your BSON file:
+To incorporate **meg.db** into your JavaScript project, import the required classes and create an instance of the desired provider, such as `BSONProvider`, `JSONProvider`, or `NBTProvider`. Here are a few examples:
 
 ```javascript
-import { BSONProvider } from "meg.db";
+import { BSONProvider, JSONProvider, NBTProvider } from "meg.db";
 
-const db = new BSONProvider('./megdb.bson');
-```
-
-or you can use `JSONProvider` to use JSON based database.
-```javascript
-import { JSONProvider } from "meg.db";
-
-const db = new JSONProvider('./megdb.json');
-```
-
-or you can use `NBTProvider` to use NBT based database.
-```javascript
-import { NBTProvider } from "meg.db";
-
-const db = new NBTProvider('./megdb.nbt');
+const bsonDB = new BSONProvider({ filepath: "./megdb.bson" });
+const jsonDB = new JSONProvider({ filepath: "./megdb.json" });
+const nbtDB = new NBTProvider({ filepath: "./megdb.nbt" });
 ```
 
 ### Simple Examples
 
-You can set and retrieve key-value pairs using the `set` and `get` methods:
+Key-value pairs can be easily set and retrieved using the `set` and `get` methods:
 
 ```javascript
-db.set('key1', 'value1');
-console.log(db.get('key1')); // Output: value1
+bsonDB.set('key1', 'value1');
+console.log(bsonDB.get('key1')); // Output: value1
 
-db.push('array1', ["hi", "hello", 1, null, true ])
-console.log(db.get('array1')); // Output: ["hi", "hello", 1, null, true]
-db.pull('array1', "hello");
-console.log(db.get('array1')); // Output: ["hi", 1, null, true]
+jsonDB.push('array1', ["hi", "hello", 1, null, true ]);
+console.log(jsonDB.get('array1')); // Output: ["hi", "hello", 1, null, true]
+jsonDB.pull('array1', "hello");
+console.log(jsonDB.get('array1')); // Output: ["hi", 1, null, true]
 
 // And more...
 ```
 
-## Features
+## Backup Feature
 
-- **Lightweight**: Designed to have a minimal footprint and low resource usage.
-- **Fast**: Optimized for efficient data storage and retrieval operations.
-- **Efficient**: Utilizes efficient algorithms and data structures for optimal performance.
-- **Easy to use**: Provides a simple and intuitive interface for working with the database.
-- **ESM support**: Supports ES modules for modern JavaScript development.
+With **meg.db**, you can effortlessly create backups with a variety of options. Using the built-in cronJob pattern, you can set the time, timezone, and backup folder path.
 
-### Database Schemas
+```javascript
+import { JSONProvider } from "meg.db";
 
-Module also supports optional schema validation using the `BSONSchema` class. You can define a schema to enforce a specific structure and data types for a collection, but it is not mandatory.
+const dbjson = new JSONProvider({ 
+  filePath: "./data.json", 
+  useExperimentalSaveMethod: true,
+  backupOptions: {
+    enabled: true,
+    timezone: "Europe/Istanbul",
+    CronJobPattern: "0 00 20 * * *",
+    folderPath: "./backups"
+  }
+});
 
-### Currently Disabled for rework.
+// Your code ...
+
+```
+
+## Experimental Save Method
+
+All databases come equipped with an advanced saving method that offers significantly improved performance. However, this method is still in development, and while the chance of data loss is minimal, it's recommended to use it at your own risk.
+
+### Activation:
+
+You can enable this method by setting the `useExperimentalSaveMethod` option to `true`.
+
+```javascript
+import { JSONProvider } from "meg.db";
+
+const megdb = new JSONProvider({ filepath: "./megdb.json", useExperimentalSaveMethod: true });
+
+// Your code ...
+```
+
+## Database Migration
+
+**meg.db** allows you to seamlessly move data from other databases. Here's an example using the quick.db library:
+
+```javascript
+
+import { JSONProvider, DatabaseMigration } from "meg.db";
+import { QuickDB } from "quick.db";
+
+const megdb = new JSONProvider({ filepath: "./megdb.json" });
+const migration = new DatabaseMigration(megdb);
+const quickdb = new QuickDB();
+
+quickdb.set(`hi`, `Hello, world!`);
+quickdb.set(`array`, [1, undefined, "hi", true]);
+migration.move({ data: await quickdb.all(), databaseType: "quick.db" });
+
+console.log(megdb.all()) // Map(2) { 'hi' => 'Hello, world!', 'array' => [1, undefined, "hi", true] }
+
+```
+
+### Database Schemas (Currently Disabled)
+
+The module offers optional schema validation using the `BSONSchema` class. Schemas can enforce specific structures and data types for collections.
 
 ```javascript
 import { BSONprovider, BSONSchema } from "meg.db";
@@ -80,12 +128,10 @@ db.set('user', { name: 'John Doe', age: 30, email: 'johndoe@example.com' });
 console.log(db.get('user'));
 ```
 
-If a schema is defined, meg.db will validate the data against the schema when setting values. If the data does not conform to the schema, an error will be thrown. However, if no schema is defined, no validation will be performed.
-
 ## License
 
 This module is open source and available under the [MIT License](https://opensource.org/licenses/MIT).
 
 ## Contributing
 
-Contributions are welcome! If you find any issues or have suggestions for improvement, please open an issue or submit a pull request on the [GitHub repository](https://github.com/MegalithOffical/meg.db/issues).
+Contributions are welcome! If you encounter any issues or have suggestions for improvement, please don't hesitate to open an issue or submit a pull request on the [GitHub repository](https://github.com/MegalithOffical/meg.db/issues).

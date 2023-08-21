@@ -1,5 +1,10 @@
-/data.bson
-/database.json
 node_modules
 .vscode
 old
+docs
+tsconfig.json
+typedoc.json
+data.json
+data.bson
+data.nbt
+backups

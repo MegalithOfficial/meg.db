@@ -1,54 +1,26 @@
-import { BSONProvider, NBTProvider, JSONProvider } from "../src/main.js"
-import Benchmark from 'hyprbench';
-import { QuickDB } from "quick.db";
+import { BSONProvider, NBTProvider, JSONProvider, DatabaseMigration, DatabaseTypes } from "../src/main.js"
 
-const dbjson = new JSONProvider({ filePath: "./data.json", useExperimentalSaveMethod: true });
+const dbjson = new JSONProvider({ 
+  filePath: "./data.json", 
+  useExperimentalSaveMethod: true,
+  backupOptions: {
+    enabled: true,
+    timezone: "Europe/Istanbul",
+    CronJobPattern: "0 05 19 * * *",
+    folderPath: "./backups"
+  }
+});
+
 const dbbson = new BSONProvider({ filePath: "./data.bson", useExperimentalSaveMethod: true });
 const dbnbt = new NBTProvider({ filePath: "./data.nbt", useExperimentalSaveMethod: true });
 
-const qdb = new QuickDB(); 
+const migrate = new DatabaseMigration(dbjson); 
 
-const benchmark = new Benchmark();
 
-benchmark.on('complete', (data) => {
-  data.sort((a, b) => a.time - b.time);
+dbbson.set(`hi`, "hello!")
+migrate.move({ data: dbbson.all(), databaseType: "quick.db" })
+console.log(dbjson.all())
 
-  data.forEach((item, index) => {
-    console.log(`${index + 1}. ${item.name} - Performance: ${item.performance} / Time: ${item.time.toFixed(0)} Milisecond.`);
-  });
-});
-
-benchmark.set('meg.db-json', () => {
-  for (let i = 0; i < 500; i++) {
-    dbjson.set(`keyring-${i}`, `${i}`);
-  };
-});
-
-benchmark.set('meg.db-dbbson', () => {
-    for (let i = 0; i < 500; i++) {
-      dbbson.set(`keyring-${i}`, `${i}`);
-    };
-});
-
-benchmark.set('meg.db-nbt', () => {
-  for (let i = 0; i < 500; i++) {
-    dbnbt.set(`keyring-${i}`, `${i}`);
-  };
-});
-
-benchmark.set('meg.db-json', () => {
-    for (let i = 0; i < 500; i++) {
-      dbjson.set(`keyring-${i}`, `${i}`);
-    };
-});
-
-benchmark.set('quick.db-sqlite', () => {
-  for (let i = 0; i < 500; i++) {
-    qdb.set(`keyring-${i}`, `${i}`);
-  };
-});
-
-benchmark.run(2);
 
 /*db.set('key1', 'value1');
 const value = db.get('key1');

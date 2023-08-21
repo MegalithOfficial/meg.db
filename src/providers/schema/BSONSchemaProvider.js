@@ -11,7 +11,7 @@ export class BSONSchema extends BSONProvider {
   /**
    * Validates the given document against the schema.
    * @param {Object} document - The document to validate.
-   * @throws {Error} If the validation fails.
+   * @throws {SchemaError} If the validation fails.
    */
   validate(document) {
     const colorizer = new stringColorizer();

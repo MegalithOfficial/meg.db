@@ -1,17 +1,16 @@
 
 import fs from 'graceful-fs';
 import _get from 'lodash.get';
-import _unset from 'lodash.unset';
-import _has from 'lodash.has';
 import _merge from 'lodash.merge';
+import cron from "node-cron";
 
 export class JSONProvider {
 
   /**
    * Constructs a new instance of the JSONprovider class.
-   * @param {filePath: string, useExperimentalSaveMethod: boolean} opt Options for JSONProvider
+   * @param {{filePath: string, useExperimentalSaveMethod: boolean, backupOptions: { enabled: boolean; CronJobPattern: string; folderPath: string; timezone: import("../global").Timezones }}} opt Options for JSONProvider
    */
-  constructor(opt = { filePath: "./megdb.json", useExperimentalSaveMethod: false }) {
+  constructor(opt = { filePath: "./megdb.json", useExperimentalSaveMethod: false, backupOptions: { enabled: false, CronJobPattern: " 0 0 * * * *", timezone: "Europe/Istanbul", folderPath: "./backups" } }) {
 
     /**
      * @type {string} 
@@ -46,6 +45,12 @@ export class JSONProvider {
     this.cache = new Map();
 
     /**
+     * @type {Object}
+     * @private
+     */
+    this.backup = opt.backupOptions ?? { enabled: false, CronJobPattern: " * 0 0 * * *", timezone: "Europe/Istanbul", folderPath: "./backups" };
+
+    /**
      * @type {null}
      * @private
      */
@@ -56,22 +61,30 @@ export class JSONProvider {
     } else {
       this.save();
     }
+
+    if (this.backup.enabled) {
+      if (!cron.validate(this.backup.CronJobPattern)) throw new Error("Invalid Cronjob pattern.");
+
+      cron.schedule(this.backup.CronJobPattern, () => {
+        const sourceFileName = this.filePath.substring(this.filePath.lastIndexOf('/') + 1);
+        const regex = /(.+)\.json$/;
+        const match = sourceFileName.match(regex);
+
+        if (!match) throw new Error("File name is not in the expected format.");
+
+          const sourceNameWithoutExtension = match[1];
+          const backupFileName = `backup-${sourceNameWithoutExtension}-${new Date().getTime()}.json`;
+          const backupFilePath = `${this.backup.folderPath}/${backupFileName}`;
+
+          try {
+            const data = fs.readFileSync(this.filePath, 'utf8');
+            fs.mkdirSync(this.backup.folderPath, { recursive: true });
+            fs.writeFileSync(backupFilePath, data, 'utf8');
+          } catch (err) { throw new Error(err) };
+    
+      }, { timezone: this.backup.timezone });
+    }
   };
-
-
-  /**
-   * @private
-   * Sets the schema for a given schema name.
-   * @param {string} schemaName - The name of the schema.
-   * @param {object} schema - The schema object.
-   */
-  setSchema(schemaName, schema) {
-    //this.checkParams(schemaName, schema);
-    this.data.Schemas.set(schemaName, schema);
-    this.save();
-  };
-
-
 
   /**
    * Sets a key-value pair in the default data object.
@@ -79,13 +92,8 @@ export class JSONProvider {
    * @param {any} value - The value to set.
    */
   set(key, value) {
-    //this.checkParams(key, value);
-    const schema = this.getSchema(key);
-    if (schema) {
-      schema.validate(value);
-    }
     this.data.default.set(key, value);
-    this.cache.set(key, value); // Cache the updated value
+    this.cache.set(key, value);
     this.save();
   }
 
@@ -95,9 +103,8 @@ export class JSONProvider {
    * @returns {any} The value associated with the key.
    */
   get(key) {
-    //this.checkParams(key, 'get');
     if (this.cache.has(key)) {
-      return this.cache.get(key); 
+      return this.cache.get(key);
     }
     const value = this.data.default.get(key);
     this.cache.set(key, value);
@@ -109,9 +116,8 @@ export class JSONProvider {
    * @param {string} key - The key to delete.
    */
   delete(key) {
-    //this.checkParams(key, 'delete');
     this.data.default.delete(key);
-    this.cache.delete(key); // Remove from cache as well
+    this.cache.delete(key);
     this.save();
   }
 
@@ -137,7 +143,6 @@ export class JSONProvider {
    * @param {any} value - The value to add to the array.
    */
   push(key, value) {
-    //this.checkparams(key, value);
     const array = this.get(key) || [];
     array.push(value);
     this.set(key, array);
@@ -149,7 +154,6 @@ export class JSONProvider {
    * @param {any} value - The value to remove from the array.
    */
   pull(key, value) {
-    //this.checkparams(key, value);
     const array = this.get(key) || [];
     const index = array.indexOf(value);
     if (index > -1) {
@@ -160,18 +164,12 @@ export class JSONProvider {
 
   /**
    * Deletes all key-value pairs from the default data object.
-   * @param {String} type
    */
-  deleteAll(type) {
-    const lowerCaseType = type.toLowerCase();
-    if (lowerCaseType === 'default') this.data.default = {};
-    else if (lowerCaseType === 'schemas') this.data.Schemas = {};
-    else throw new Error(`Unknown type: ${type}. Valid types: schemas, default`);
-
+  deleteAll() {
+    this.data.default.clear();
     this.cache.clear();
     this.save();
   }
-
 
   /**
    * Retrieves all key-value pairs from the default data object.
@@ -186,23 +184,24 @@ export class JSONProvider {
    * @param {Object} opt 
    * @returns {boolean}
    */
-  move(data) {
-    if (!data.constructor) throw new Error('Invalid database class.');
-    const datas = data.all() || data.getAll();
-    for (let key in datas) {
-      this.set(key, datas[key]);
+  async move(data) {
+    let datas = {};
+
+    if (data instanceof Map) {
+      datas = Object.fromEntries(data.entries());
+    } else if (typeof data === 'object') {
+      datas = data;
+    } else {
+      throw new Error('Invalid data type.');
     }
+
+    for (const key in datas) {
+      if (datas.hasOwnProperty(key)) {
+        this.set(datas[key].id, datas[key].value);
+      }
+    }
+
     return true;
-  }
-  
-  /**
-   * @private
-   * Retrieves the schema associated with the specified schema name.
-   * @param {string} schemaName - The name of the schema.
-   * @returns {object} The schema associated with the schema name.
-   */
-  getSchema(schemaName) {
-    return _get(this.data, ['Schemas', schemaName]);
   };
 
   /**
@@ -213,7 +212,7 @@ export class JSONProvider {
     const jsonData = JSON.parse(fs.readFileSync(file, { encoding: 'utf8' }));
     this.data.Schemas = new Map(Object.entries(jsonData.Schemas));
     this.data.default = new Map(Object.entries(jsonData.default));
-    this.cache.clear(); 
+    this.cache.clear();
   }
 
   /**
