@@ -30,4 +30,3 @@ Benchmark('meg.db-bson', (i) => {
   //@ts-ignore
   bsondb.set(`keyring-${i * 2}`, `${i}`)
 });
-

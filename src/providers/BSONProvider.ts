@@ -4,8 +4,6 @@ import DatabaseError from "../DatabaseError";
 import BSON from 'bson';
 import fs from 'graceful-fs';
 import cron from "node-cron";
-import _merge from 'lodash.merge';
-import merge from 'lodash.merge';
 
 
 export class BSONProvider<V extends DatabaseSignature<V> = DatabaseMap> {
