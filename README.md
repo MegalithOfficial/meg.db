@@ -1,6 +1,6 @@
 # meg.db
 
-🚀 **meg.db** is a lightweight, fast, and efficient BSON (Binary JSON), JSON, and NBT database module for JavaScript. It provides a simple interface to store and retrieve data using BSON files. The module is designed to be efficient, ensuring optimal performance for your database operations.
+🚀 **meg.db** is a lightweight, fast, and efficient BSON (Binary JSON), JSON, and NBT database module for JavaScript and Typescript. It provides a simple interface to store and retrieve data using BSON files. The module is designed to be efficient, ensuring optimal performance for your database operations.
 
 ## Features
 
@@ -8,12 +8,16 @@
 - **Fast**: Optimized for efficient data storage and retrieval operations. ⚡
 - **Efficient**: Utilizes efficient algorithms and data structures for optimal performance. 🏎️
 - **User-Friendly**: Offers an intuitive interface for smooth interaction with the database. 🤝
-- **ESM Support**: Compatible with ES modules for modern JavaScript development. 📦
+- **ESM and CJS Support**: Compatible with ESM Projects, CJS projects and Typescript projects for modern JavaScript development. 📦
 - **Database Migration**: Seamlessly migrate data from other databases to **meg.db**. 🔄
 - **Backup Feature**: Create backups with ease and customize options such as time, timezone, and folder path. 📂🗄️
-- **Experimental Save Method**: An advanced saving method for improved performance (use with caution). 🔧⚙️
+- **Experimental Save Method**: An advanced saving method for improved performance. 🔧⚙️
+
+### Click here to go [Meg.db Documents](https://megdb.js.org/)
 
 ## Installation
+
+**meg.db** is designed to work seamlessly with Node.js v14 and above. While it is compatible with Node.js v14 and newer versions, we strongly recommend using the latest available version of Node.js to ensure you benefit from the latest features, performance enhancements, and security updates.
 
 You can easily install **meg.db** using npm:
 
@@ -23,10 +27,14 @@ npm install meg.db
 
 ## Usage
 
-To incorporate **meg.db** into your JavaScript project, import the required classes and create an instance of the desired provider, such as `BSONProvider`, `JSONProvider`, or `NBTProvider`. Here are a few examples:
+To incorporate **meg.db** into your JavaScript/Typescript project, import the required classes and create an instance of the desired provider, such as `BSONProvider`, `JSONProvider`, or `NBTProvider`. Here are a few examples:
 
 ```javascript
+// For ESM and Typescript
 import { BSONProvider, JSONProvider, NBTProvider } from "meg.db";
+
+// or CJS
+const { BSONProvider, JSONProvider, NBTProvider } = require("meg.db");
 
 const bsonDB = new BSONProvider({ filepath: "./megdb.bson" });
 const jsonDB = new JSONProvider({ filepath: "./megdb.json" });
@@ -54,7 +62,6 @@ console.log(jsonDB.get('array1')); // Output: ["hi", 1, null, true]
 With **meg.db**, you can effortlessly create backups with a variety of options. Using the built-in cronJob pattern, you can set the time, timezone, and backup folder path.
 
 ```javascript
-import { JSONProvider } from "meg.db";
 
 const dbjson = new JSONProvider({ 
   filePath: "./data.json", 
@@ -73,7 +80,7 @@ const dbjson = new JSONProvider({
 
 ## Experimental Save Method
 
-All databases come equipped with an advanced saving method that offers significantly improved performance. However, this method is still in development, and while the chance of data loss is minimal, it's recommended to use it at your own risk.
+All databases come equipped with an advanced saving method that offers significantly improved performance. However, this method is still in development.
 
 ### Activation:
 
@@ -93,8 +100,8 @@ const megdb = new JSONProvider({ filepath: "./megdb.json", useExperimentalSaveMe
 
 ```javascript
 
-import { JSONProvider, DatabaseMigration } from "meg.db";
-import { QuickDB } from "quick.db";
+import { JSONProvider, DatabaseMigration } from "meg.db"; // Version: 2.1.0
+import { QuickDB } from "quick.db"; // Version: 9.1.7
 
 const megdb = new JSONProvider({ filepath: "./megdb.json" });
 const migration = new DatabaseMigration(megdb);
@@ -102,7 +109,7 @@ const quickdb = new QuickDB();
 
 quickdb.set(`hi`, `Hello, world!`);
 quickdb.set(`array`, [1, undefined, "hi", true]);
-migration.move({ data: await quickdb.all(), databaseType: "quick.db" });
+migration.move(await quickdb.all());
 
 console.log(megdb.all()) // Map(2) { 'hi' => 'Hello, world!', 'array' => [1, undefined, "hi", true] }
 
@@ -130,7 +137,7 @@ console.log(db.get('user'));
 
 ## License
 
-This module is open source and available under the [GNU License](https://opensource.org/license/gpl-3-0/).
+This module is open source and available under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0).
 
 ## Contributing
 

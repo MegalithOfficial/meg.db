@@ -1,19 +1,13 @@
 {
   "name": "meg.db",
-  "version": "2.0.0",
-  "description": "Fast, Lightweight and efficient BSON Database Module.",
-  "type": "module",
-  "main": "src/main.js",
-  "types": "src/global.d.ts",
-  "exports": {
-    "types": "./src/global.d.ts",
-    "import": "./src/main.js",
-    "require": "./build/main.cjs"
-  },
+  "version": "2.1.0",
+  "description": "Fast, Lightweight and efficient BSON, JSON and NBT Database Module.",
+  "main": "lib/main.js",
+  "types": "lib/main.d.ts",
   "scripts": {
-    "test": "node test/test.js",
-    "build": "babel index.js -d dist",
-    "start": "npm run build && node dist/index.js"
+    "build": "rimraf ./lib && tsc",
+    "start": "npm run build && node lib/main.js",
+    "test": "ts-node tests/test.ts"
   },
   "keywords": [
     "Database",
@@ -34,26 +28,30 @@
   ],
   "author": "MegalithOffical",
   "license": "Apache-2.0",
+  "devDependencies": {
+    "@types/bson": "^4.2.0",
+    "@types/graceful-fs": "^4.1.6",
+    "@types/lodash.get": "^4.4.7",
+    "@types/lodash.merge": "^4.6.7",
+    "@types/node": "^20.5.2",
+    "@types/node-cron": "^3.0.8",
+    "nodemon": "^3.0.1",
+    "rimraf": "^5.0.1",
+    "ts-node": "^10.9.1",
+    "typedoc": "^0.24.8",
+    "typescript": "^5.1.6"
+  },
   "dependencies": {
-    "bson-ext": "^4.0.3",
+    "bson": "^5.4.0",
     "graceful-fs": "^4.2.11",
-    "lodash.get": "^4.4.2",
+    "hyprbench": "^1.0.2",
     "lodash.merge": "^4.6.2",
     "node-cron": "^3.0.2",
-    "prismarine-nbt": "^2.2.1",
-    "string-colorizer": "^1.0.4"
-  },
-  "devDependencies": {
-    "@babel/cli": "^7.22.6",
-    "@babel/core": "^7.22.6",
-    "@babel/plugin-proposal-class-properties": "^7.18.6",
-    "@babel/plugin-proposal-object-rest-spread": "^7.20.7",
-    "@babel/plugin-transform-modules-commonjs": "^7.22.5",
-    "@babel/preset-env": "^7.22.6",
-    "typedoc": "^0.24.8"
+    "prismarine-nbt": "^2.2.1"
   },
   "directories": {
-    "test": "test"
+    "doc": "docs",
+    "test": "tests"
   },
   "repository": {
     "type": "git",
