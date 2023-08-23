@@ -19,5 +19,5 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
   },
-  "exclude": ["node_modules", "build", "tests", "docs", ".vscode", "typedoc.json"]
+  "exclude": ["node_modules", "lib", "tests", "docs", ".vscode", "typedoc.json"]
 }
