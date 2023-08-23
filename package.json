@@ -1,6 +1,6 @@
 {
   "name": "meg.db",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Fast, Lightweight and efficient BSON, JSON and NBT Database Module.",
   "main": "lib/main.js",
   "types": "lib/main.d.ts",
@@ -29,11 +29,9 @@
   "author": "MegalithOffical",
   "license": "Apache-2.0",
   "devDependencies": {
-    "@types/bson": "^4.2.0",
     "@types/graceful-fs": "^4.1.6",
     "@types/node": "^20.5.2",
     "@types/node-cron": "^3.0.8",
-    "ts-node": "^10.9.1",
     "typedoc": "^0.24.8",
     "typescript": "^5.1.6"
   },
@@ -42,6 +40,18 @@
     "graceful-fs": "^4.2.11",
     "node-cron": "^3.0.2",
     "prismarine-nbt": "github:MegalithOffical/prismarine-nbt"
+  },
+  "peerDependencies": {
+    "bson": "^5.4.x",
+    "prismarine-nbt": "^2.2.x"
+  },
+  "peerDependenciesMeta": {
+    "bson": {
+      "optional": true
+    },
+    "prismarine-nbt": {
+      "optional": true
+    }
   },
   "directories": {
     "doc": "docs",
