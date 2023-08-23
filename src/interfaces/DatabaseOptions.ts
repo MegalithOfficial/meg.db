@@ -48,7 +48,7 @@ export const ProviderDefaultOptions: ProviderOptions = {
   useExperimentalSaveMethod: false,
   backupOptions: {
     enabled: false,
-    CronJobPattern: "0 0 0 * * *",
+    CronJobPattern: "0 0 * * *",
     timezone: "Europe/Istanbul",
     folderPath: "./Backups"
   },

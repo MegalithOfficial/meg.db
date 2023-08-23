@@ -3,7 +3,7 @@ import { ProviderDefaultOptions, ProviderOptions, DatabaseSignature, DatabaseMap
 
 import fs from 'graceful-fs';
 import nbt, { TagType, NBT } from "prismarine-nbt";
-import cron from "node-cron";
+import cron from "cron";
 
 export class NBTProvider<V extends DatabaseSignature<V> = DatabaseMap> { 
 
@@ -41,12 +41,12 @@ export class NBTProvider<V extends DatabaseSignature<V> = DatabaseMap> {
     }
     
     if (this.backup?.enabled) {
-      if (!cron.validate(this.backup?.CronJobPattern) || typeof this.backup.CronJobPattern !== "string") new DatabaseError({ message: "Invalid Cronjob pattern type or Invalid pattern", expected: "string", received: typeof this.backup.CronJobPattern });
+      if (typeof this.backup.CronJobPattern !== "string") new DatabaseError({ message: "Invalid Cronjob pattern type or Invalid pattern.\nIf you are confused use this site: https://crontab.guru/", expected: "string", received: typeof this.backup.CronJobPattern });
       if (typeof this.backup?.folderPath !== "string") new DatabaseError({ message: "Invalid Folderpath", expected: "string", received: typeof this.backup?.folderPath });
       if (typeof this.backup?.timezone !== "string") new DatabaseError({ message: "Invalid Timezone", expected: "string", received: typeof this.backup?.folderPath });
       if (typeof this.backup?.enabled !== "boolean") new DatabaseError({ message: "Invalid Folderpath", expected: "boolean", received: typeof this.backup?.folderPath });
       
-      cron.schedule(this.backup.CronJobPattern, () => {
+      new cron.CronJob(this.backup.CronJobPattern, () => {
         const sourceFileName = this.filePath.substring(this.filePath.lastIndexOf("/") + 1);
         const regex = /(.+)\.json$/;
         const match = sourceFileName.match(regex);
@@ -65,7 +65,7 @@ export class NBTProvider<V extends DatabaseSignature<V> = DatabaseMap> {
         } catch (err) {
           throw err
         }
-      }, { timezone: this.backup.timezone });
+      }, null, true, this.backup.timezone );
     }; 
 
   }

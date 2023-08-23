@@ -31,15 +31,14 @@
   "devDependencies": {
     "@types/graceful-fs": "^4.1.6",
     "@types/node": "^20.5.2",
-    "@types/node-cron": "^3.0.8",
     "typedoc": "^0.24.8",
     "typescript": "^5.1.6"
   },
   "dependencies": {
-    "bson": "^5.4.0",
+    "bson": "^5.4.x",
+    "cron": "^2.4.1",
     "graceful-fs": "^4.2.11",
-    "node-cron": "^3.0.2",
-    "prismarine-nbt": "github:MegalithOffical/prismarine-nbt"
+    "prismarine-nbt": "^2.2.x"
   },
   "peerDependencies": {
     "bson": "^5.4.x",
