@@ -1,3 +1,3 @@
 export type DatabaseSignature<V> = {
-  [key in keyof V]: any;
-};
+    [key in keyof V]: any;
+  };

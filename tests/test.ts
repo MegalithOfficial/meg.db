@@ -1,32 +1,43 @@
-import { BSONProvider, DatabaseMigration, JSONProvider, NBTProvider } from "../src/main";
+import { Megdb, JSONDriver, BSONDriver, BINDriver } from "../src/main";
 
-const nbtdb = new NBTProvider({ filePath: "./megdb.nbt", useExperimentalSaveMethod: true, backupOptions: { timezone: "Europe/Istanbul", enabled: true, CronJobPattern: "0 0 0 * * *", folderPath: "./backups" } })
-const jsondb = new JSONProvider({ filePath: "./megdb.json", useExperimentalSaveMethod: true, backupOptions: { timezone: "Europe/Istanbul", enabled: true, CronJobPattern: "0 0 0 * * *", folderPath: "./backups" } })
-const bsondb = new BSONProvider({ filePath: "./megdb.bson", useExperimentalSaveMethod: true, backupOptions: { timezone: "Europe/Istanbul", enabled: true, CronJobPattern: "0 0 0 * * *", folderPath: "./backups" } })
+const drivers = [JSONDriver, BSONDriver, BINDriver];
+const dbs = drivers.map(driver => new Megdb({ driver: new driver({ filePath: "./megdb-test" }) }));
 
-function Benchmark(name: any, fn: any): void {
-  const start = process.hrtime();
+const keyToEnter = "key1";
+const valueToEnter = "test_value";
 
-  for (let i = 0; i < 1000; i++) fn(i);
-  const end = process.hrtime(start);
-  const elapsedTime = ((end[0] * 1e9 + end[1]) / 1e6).toFixed(0);
+const testCases = [
+    { key: "key1", value: { name: "test", age: 30 } },
+    { key: "key2", value: { name: "test", address: { city: "test_city", country: "test_country" } } }
+];
 
-  return console.log(`${name}: ${elapsedTime}ms (1000 runs sampled.)`);
-}
+let queue: Array<() => void> = [];
 
-
-//@ts-ignore
-Benchmark('meg.db-nbt', (i) => {
-  //@ts-ignore
-  nbtdb.set(`keyring-${i * 2}`, `${i}`)
+dbs.forEach((db, i) => {
+    queue.push(() => {
+        console.log(`\n------ Database ${i} ------`);
+        db.set(keyToEnter, valueToEnter);
+        const value = db.get(keyToEnter);
+        console.log(`🔑 Key: ${keyToEnter}`);
+        console.log(`📝 Value: ${value}`);
+        console.log(`✅ Is value correct? ${value === valueToEnter}`);
+    });
 });
 
-Benchmark('meg.db-json', (i) => {
-  //@ts-ignore
-  jsondb.set(`keyring-${i * 2}`, `${i}`)
+testCases.forEach(testCase => {
+    dbs.forEach((db, i) => {
+        queue.push(() => {
+            console.log(`\n------ Database ${i}, Key ${testCase.key} ------`);
+            db.set(testCase.key, testCase.value);
+            const value = db.get(testCase.key);
+            console.log(`🔑 Key: ${testCase.key}`);
+            console.log(`📝 Value: ${JSON.stringify(value, null, 2)}`);
+            console.log(`✅ Is value correct? ${JSON.stringify(value) === JSON.stringify(testCase.value)}`);
+        });
+    });
 });
 
-Benchmark('meg.db-bson', (i) => {
-  //@ts-ignore
-  bsondb.set(`keyring-${i * 2}`, `${i}`)
-});
+while (queue.length > 0) {
+    const task = queue.shift();
+    if (task) task();
+};

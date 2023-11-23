@@ -1,6 +1,11 @@
-# meg.db
+<p align="center">
+  <a href="https://github.com/MegalithOfficial/meg.db">
+    <img src="https://raw.githubusercontent.com/MegalithOfficial/meg.db/main/Images/megdb-round.png" alt="megdb" style="border-radius: 50%;" width="300" height="300">
+  </a>
+</p>
+<h1 align="center">meg.db - lightweight, fast, and efficient Database module</h1>
 
-🚀 **meg.db** is a lightweight, fast, and efficient BSON (Binary JSON), JSON, and NBT database module for JavaScript and Typescript. It provides a simple interface to store and retrieve data using BSON files. The module is designed to be efficient, ensuring optimal performance for your database operations.
+🚀 **meg.db** is a lightweight, fast, and efficient BSON (Binary JSON), JSON, and BIN database module for JavaScript and Typescript. It provides a simple interface to store and retrieve data using files. The module is designed to be efficient, ensuring optimal performance for your database operations.
 
 ## Features
 
@@ -11,8 +16,8 @@
 - **ESM and CJS Support**: Compatible with ESM Projects, CJS projects and Typescript projects for modern JavaScript development. 📦
 - **Database Migration**: Seamlessly migrate data from other databases to **meg.db**. 🔄
 - **Backup Feature**: Create backups with ease and customize options such as time, timezone, and folder path. 📂🗄️
-- **Experimental Save Method**: An advanced saving method for improved performance. 🔧⚙️
-
+- **Temporary Data set**: Create and manage short-term data conveniently without clutter. 🗃️
+- **Garbage Collector**: Automatically removes expired or unused temporary data for a clean, optimized database. 🗑️
 ### Click here to go [Meg.db Documents](https://megdb.js.org/)
 
 ## Installation
@@ -27,18 +32,18 @@ npm install meg.db
 
 ## Usage
 
-To incorporate **meg.db** into your JavaScript/Typescript project, import the required classes and create an instance of the desired provider, such as `BSONProvider`, `JSONProvider`, or `NBTProvider`. Here are a few examples:
+To incorporate **meg.db** into your JavaScript/Typescript project, import the required classes and create an instance of the desired driver, such as `BSONDriver`, `BINDriver` or `JSONDriver` Here are a few examples:
 
 ```javascript
-// For ESM and Typescript
-import { BSONProvider, JSONProvider, NBTProvider } from "meg.db";
-
+// For ESM/Typescript
+import { Megdb, BSONDriver, JSONDriver, BINDriver } from "meg.db";
 // or CJS
-const { BSONProvider, JSONProvider, NBTProvider } = require("meg.db");
+const { Megdb, BSONDriver, JSONDriver, BINDriver } = require("meg.db");
 
-const bsonDB = new BSONProvider({ filepath: "./megdb.bson" });
-const jsonDB = new JSONProvider({ filepath: "./megdb.json" });
-const nbtDB = new NBTProvider({ filepath: "./megdb.nbt" });
+const dbbson = new MegDB({ driver: new BSONDriver({ filePath: "./megdb.bson" }) });
+const dbjson = new MegDB({ driver: new JSONDriver({ filePath: "./megdb.json" }) });
+const dbbin = new Megdb({ driver: new BINDriver({ filePath: "./megdb.bin" }) });
+
 ```
 
 ### Simple Examples
@@ -46,13 +51,13 @@ const nbtDB = new NBTProvider({ filepath: "./megdb.nbt" });
 Key-value pairs can be easily set and retrieved using the `set` and `get` methods:
 
 ```javascript
-bsonDB.set('key1', 'value1');
-console.log(bsonDB.get('key1')); // Output: value1
+dbbson.set('key1', 'value1');
+console.log(dbbson.get('key1')); // Output: value1
 
-jsonDB.push('array1', ["hi", "hello", 1, null, true ]);
-console.log(jsonDB.get('array1')); // Output: ["hi", "hello", 1, null, true]
-jsonDB.pull('array1', "hello");
-console.log(jsonDB.get('array1')); // Output: ["hi", 1, null, true]
+dbjson.push('array1', ["hi", "hello", 1, null, true ]);
+console.log(dbjson.get('array1')); // Output: ["hi", "hello", 1, null, true]
+dbjson.pull('array1', "hello");
+console.log(dbjson.get('array1')); // Output: ["hi", 1, null, true]
 
 // And more...
 ```
@@ -63,36 +68,57 @@ With **meg.db**, you can effortlessly create backups with a variety of options. 
 
 ```javascript
 
-const dbjson = new JSONProvider({ 
-  filePath: "./data.json", 
-  useExperimentalSaveMethod: true,
+const dbjson = new Megdb({
+  driver: new JSONDriver({
+  filePath: "./megdb.json",
   backupOptions: {
     enabled: true,
     timezone: "Europe/Istanbul",
     CronJobPattern: "0 00 20 * * *",
     folderPath: "./backups"
   }
+ })
 });
 
 // Your code ...
 
 ```
 
-## Experimental Save Method
+## Garbage Collector and TTL
 
-All databases come equipped with an advanced saving method that offers significantly improved performance. However, this method is still in development.
-
-### Activation:
-
-You can enable this method by setting the `useExperimentalSaveMethod` option to `true`.
+Utilize Time-To-Live (TTL) for auto-deletion of temporary data:
 
 ```javascript
-import { JSONProvider } from "meg.db";
+// Set data to auto-delete in 10 seconds
+dbjson.set("hello", "Hi! this will be deleted in 10 seconds!", 10 * 1000);
 
-const megdb = new JSONProvider({ filepath: "./megdb.json", useExperimentalSaveMethod: true });
-
-// Your code ...
+// Use Callbacks
+dbjson.set("hello", "Hi! this will be deleted in 30 seconds!", 30 * 1000, (key, value) => {
+  console.log(key + " deleted.");
+});
 ```
+
+or Implement Garbage Collector to manage expired data:
+
+```javascript
+const dbjson = new Megdb({
+  driver: new JSONDriver({
+    filePath: "./megdb.json",
+    garbageCollection: {
+      enabled: true,
+      interval: 1000
+    },
+ })
+});
+
+dbjson.set("Hello", "This won't be deleted");
+dbjson.set("Hello2", "This will be deleted in 10 seconds", 10 * 1000); // 10 seconds
+
+// Manually trigger Garbage Collection
+dbjson.runGarbageCollection();
+```
+
+These methods enable automatic data deletion after a specified time and efficient management of expired data through the Garbage Collector. 🕒✨
 
 ## Database Migration
 
@@ -100,10 +126,10 @@ const megdb = new JSONProvider({ filepath: "./megdb.json", useExperimentalSaveMe
 
 ```javascript
 
-import { JSONProvider, DatabaseMigration } from "meg.db"; // Version: 2.1.0
+import { Megdb, BSONDriver, DatabaseMigration } from "meg.db"; // Version: 3.0.0
 import { QuickDB } from "quick.db"; // Version: 9.1.7
 
-const megdb = new JSONProvider({ filepath: "./megdb.json" });
+const megdb = new MegDB({ driver: new JSONDriver({ filePath: "./megdb.json" }) });
 const migration = new DatabaseMigration(megdb);
 const quickdb = new QuickDB();
 
@@ -113,26 +139,6 @@ migration.move(await quickdb.all());
 
 console.log(megdb.all()) // Map(2) { 'hi' => 'Hello, world!', 'array' => [1, undefined, "hi", true] }
 
-```
-
-### Database Schemas (Currently Disabled)
-
-The module offers optional schema validation using the `BSONSchema` class. Schemas can enforce specific structures and data types for collections.
-
-```javascript
-import { BSONprovider, BSONSchema } from "meg.db";
-
-const db = new BSONProvider('./data.bson');
-
-const userSchema = new BSONSchema('./data.bson', {
-  name: { type: 'string', required: true },
-  age: { type: 'number', required: true },
-  email: { type: 'string', required: false },
-});
-db.setSchema('user', userSchema);
-
-db.set('user', { name: 'John Doe', age: 30, email: 'johndoe@example.com' });
-console.log(db.get('user'));
 ```
 
 ## License

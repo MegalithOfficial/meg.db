@@ -1,67 +1,65 @@
 {
-  "name": "meg.db",
-  "version": "2.1.2",
-  "description": "Fast, Lightweight and efficient BSON, JSON and NBT Database Module.",
-  "main": "lib/main.js",
-  "types": "lib/main.d.ts",
-  "scripts": {
-    "build": "tsc",
-    "start": "npm run build && node lib/main.js",
-    "test": "ts-node tests/test.ts"
-  },
-  "keywords": [
-    "Database",
-    "Module",
-    "Schema",
-    "Query",
-    "BSON",
-    "Collection",
-    "discord bot",
-    "JSON",
-    "Data Access",
-    "Binary Json",
-    "NoSQL",
-    "discord bot database",
-    "discord",
-    "Backup",
-    "Database Management"
-  ],
-  "author": "MegalithOffical",
-  "license": "Apache-2.0",
-  "devDependencies": {
-    "@types/graceful-fs": "^4.1.6",
-    "@types/node": "^20.5.2",
-    "typedoc": "^0.24.8",
-    "typescript": "^5.1.6"
-  },
-  "dependencies": {
-    "bson": "^5.4.x",
-    "cron": "^2.4.1",
-    "graceful-fs": "^4.2.11",
-    "prismarine-nbt": "^2.2.x"
-  },
-  "peerDependencies": {
-    "bson": "^5.4.x",
-    "prismarine-nbt": "^2.2.x"
-  },
-  "peerDependenciesMeta": {
-    "bson": {
-      "optional": true
+    "name": "meg.db",
+    "version": "3.0.0",
+    "description": "Fast, Lightweight and efficient BSON, JSON and BIN Database Module.",
+    "main": "lib/main.js",
+    "types": "lib/main.d.ts",
+    "scripts": {
+        "build": "tsc",
+        "start": "npm run build && node lib/main.js",
+        "test": "ts-node tests/dbadd.ts",
+        "test:benchmark": "ts-node tests/benchmark.ts",
+        "test:migration": "ts-node tests/databaseMigration-test.ts"
     },
-    "prismarine-nbt": {
-      "optional": true
-    }
-  },
-  "directories": {
-    "doc": "docs",
-    "test": "tests"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/MegalithOffical/meg.db.git"
-  },
-  "bugs": {
-    "url": "https://github.com/MegalithOffical/meg.db/issues"
-  },
-  "homepage": "https://github.com/MegalithOffical/meg.db#readme"
+    "keywords": [
+        "Database",
+        "Module",
+        "Schema",
+        "Query",
+        "BSON",
+        "Collection",
+        "discord bot",
+        "JSON",
+        "Data Access",
+        "Binary Json",
+        "NoSQL",
+        "discord bot database",
+        "discord",
+        "Backup",
+        "Database Management"
+    ],
+    "author": "MegalithOffical",
+    "license": "Apache-2.0",
+    "devDependencies": {
+        "@types/cron": "^2.4.0",
+        "@types/graceful-fs": "^4.1.6",
+        "@types/node": "^20.5.2",
+        "typedoc": "^0.24.8"
+    },
+    "dependencies": {
+        "bson": "^5.4.x",
+        "clog-utils": "^2.0.0",
+        "cron": "^2.4.4",
+        "graceful-fs": "^4.2.11"
+    },
+    "peerDependencies": {
+        "bson": "^5.4.x"
+    },
+    "peerDependenciesMeta": {
+        "bson": {
+            "optional": true
+        }
+    },
+    "directories": {
+        "doc": "docs",
+        "test": "tests"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/MegalithOffical/meg.db.git"
+    },
+    "bugs": {
+        "url": "https://github.com/MegalithOffical/meg.db/issues"
+    },
+    "homepage": "https://github.com/MegalithOffical/meg.db#readme"
 }

@@ -1,3 +1,3 @@
 export interface DatabaseMigrationOptions {
-  data: Map<any, any> | object | Array<object>
+    data: Map<any, any> | object | Array<object>
 };
