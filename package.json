@@ -26,7 +26,12 @@
         "discord bot database",
         "discord",
         "Backup",
-        "Database Management"
+        "Database Management",
+        "Bin",
+        "BIN",
+        "Binary",
+        "Garbage",
+        "Garbage Collector"
     ],
     "author": "MegalithOffical",
     "license": "Apache-2.0",
