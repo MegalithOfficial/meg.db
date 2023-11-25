@@ -36,17 +36,14 @@
     "author": "MegalithOffical",
     "license": "Apache-2.0",
     "devDependencies": {
-        "@types/cron": "^2.4.0",
         "@types/graceful-fs": "^4.1.6",
-        "@types/node": "^20.5.2",
-        "typedoc": "^0.25.3"
+        "@types/node": "^20.5.2"
     },
     "dependencies": {
         "bson": "^5.4.x",
         "clog-utils": "^2.0.0",
-        "cron": "^2.4.4",
-        "graceful-fs": "^4.2.11",
-        "@mxssfd/typedoc-theme": "^1.1.3"
+        "cron": "^3.1.6",
+        "graceful-fs": "^4.2.11"
     },
     "peerDependencies": {
         "bson": "^5.4.x"

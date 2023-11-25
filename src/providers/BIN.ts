@@ -51,14 +51,17 @@ export class BINDriver<V extends DatabaseSignature<V> = DatabaseMap> {
             if (typeof this.backup?.timezone !== "string") clogUtils.error(new DatabaseError({ message: "Invalid Timezone", expected: "string", received: typeof this.backup?.folderPath }).toString());
             if (typeof this.backup?.enabled !== "boolean") clogUtils.error(new DatabaseError({ message: "Invalid Folderpath", expected: "boolean", received: typeof this.backup?.folderPath }).toString());
 
-            new cron.CronJob(this.backup.CronJobPattern, () => {
+            new cron.CronJob(this.backup.CronJobPattern, (): void => {
                 const sourceFileName = this.filePath.substring(this.filePath.lastIndexOf("/") + 1);
                 const regex = /(.+)\.bin$/;
                 const match = sourceFileName.match(regex);
 
-                if (!match) return new DatabaseError({ message: "Invalid filename format", expected: "string", received: typeof sourceFileName });
+                if (!match) {
+                    clogUtils.error(new DatabaseError({ message: "Invalid filename format", expected: "string", received: typeof sourceFileName }));
+                    return void 0;
+                };
 
-                const sourceNameWithoutExtension = match[1];
+                const sourceNameWithoutExtension = match![1];
                 const backupFileName = `backup-${sourceNameWithoutExtension}-${new Date().getTime()}.msp`;
                 const backupFilePath = `${this.backup?.folderPath}/${backupFileName}`;
 
@@ -70,7 +73,7 @@ export class BINDriver<V extends DatabaseSignature<V> = DatabaseMap> {
                     fs.mkdirSync(this.backup!.folderPath, { recursive: true });
                     this.savetofile(data, {});
                     this.filePath = oldFilePath;
-                    return true;
+                    return void 0;
                 } catch (err) {
                     throw err
                 }

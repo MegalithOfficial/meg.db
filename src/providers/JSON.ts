@@ -37,12 +37,15 @@ export class JSONDriver<V extends DatabaseSignature<V> = DatabaseMap> {
             if (typeof this.backup?.timezone !== "string") clogUtils.error(new DatabaseError({ message: "Invalid Timezone", expected: "string", received: typeof this.backup?.folderPath }).toString());
             if (typeof this.backup?.enabled !== "boolean") clogUtils.error(new DatabaseError({ message: "Invalid Folderpath", expected: "boolean", received: typeof this.backup?.folderPath }).toString());
 
-            new cron.CronJob(this.backup.CronJobPattern, () => {
+            new cron.CronJob(this.backup.CronJobPattern, (): void => {
                 const sourceFileName = this.filePath.substring(this.filePath.lastIndexOf("/") + 1);
                 const regex = /(.+)\.json$/;
                 const match = sourceFileName.match(regex);
 
-                if (!match) return new DatabaseError({ message: "Invalid filename format", expected: "string", received: typeof sourceFileName });
+                if (!match) {
+                    clogUtils.error(new DatabaseError({ message: "Invalid filename format", expected: "string", received: typeof sourceFileName }));
+                    return void 0;
+                };
 
                 const sourceNameWithoutExtension = match[1];
                 const backupFileName = `backup-${sourceNameWithoutExtension}-${new Date().getTime()}.json`;
@@ -52,7 +55,8 @@ export class JSONDriver<V extends DatabaseSignature<V> = DatabaseMap> {
                     const data = fs.readFileSync(this.filePath, 'utf8');
 
                     fs.mkdirSync(this.backup!.folderPath, { recursive: true });
-                    return fs.writeFileSync(backupFilePath, data, 'utf8');
+                    fs.writeFileSync(backupFilePath, data, 'utf8');
+                    return void 0;
                 } catch (err) {
                     throw err
                 }
