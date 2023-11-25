@@ -40,8 +40,8 @@ import { Megdb, BSONDriver, JSONDriver, BINDriver } from "meg.db";
 // or CJS
 const { Megdb, BSONDriver, JSONDriver, BINDriver } = require("meg.db");
 
-const dbbson = new MegDB({ driver: new BSONDriver({ filePath: "./megdb.bson" }) });
-const dbjson = new MegDB({ driver: new JSONDriver({ filePath: "./megdb.json" }) });
+const dbbson = new Megdb({ driver: new BSONDriver({ filePath: "./megdb.bson" }) });
+const dbjson = new Megdb({ driver: new JSONDriver({ filePath: "./megdb.json" }) });
 const dbbin = new Megdb({ driver: new BINDriver({ filePath: "./megdb.bin" }) });
 
 ```
@@ -129,7 +129,7 @@ These methods enable automatic data deletion after a specified time and efficien
 import { Megdb, BSONDriver, DatabaseMigration } from "meg.db"; // Version: 3.0.0
 import { QuickDB } from "quick.db"; // Version: 9.1.7
 
-const megdb = new MegDB({ driver: new BSONDriver({ filePath: "./megdb.bson" }) });
+const megdb = new Megdb({ driver: new BSONDriver({ filePath: "./megdb.bson" }) });
 const migration = new DatabaseMigration(megdb);
 const quickdb = new QuickDB();
 
